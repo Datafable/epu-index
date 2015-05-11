@@ -1,6 +1,6 @@
 var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30', function(d) {
-    var fill = d3.scale.category20();
-    var scalingFactor = 7;
+    var fill = d3.scale.category20(); // TODO: create custom color schema
+    var scalingFactor = 7; // TODO: should be determined based on input counts
 
     var w = d.rows.map(function(f) {
         return {text: f.text, size: 10 + f.count * scalingFactor};
@@ -8,7 +8,7 @@ var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
     d3.layout.cloud().size([300, 300])
         .words(w)
         .padding(0)
-        .rotate(function() { return ~~(Math.random() * 1) * 90; })
+        .rotate(function() { return ~~(Math.random() * 2) * 90; })
         .font("Georgia")
         .fontSize(function(d) { return d.size; })
         .on("end", draw)
@@ -36,9 +36,8 @@ var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
 });
 
 //var epu_index = d3.json('http://epu-index.herokuapp.com/api/epu/', function(d) {
-var epu_index = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select date,epu from epu_tail', function(d) {
-    console.log('Im in');
-    var dates = d.rows.map(function(f) {return new Date(f.date.substr(6, 4), f.date.substr(3, 2)-1, f.date.substr(0,2));});
+var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select date,epu from epu_tail where date<='2013-12-31' and date>='2013-01-01'", function(d) {
+    var dates = d.rows.map(function(f) {return new Date(f.date);});
     var values = d.rows.map(function(f) {return f.epu;});
     c3.generate({
         bindto: "#linechart",
@@ -51,7 +50,10 @@ var epu_index = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select da
         },
         axis: {
             x: {
-                type: 'timeseries'
+                type: 'timeseries',
+                tick: {
+                    format: "%Y-%m-%d"
+                }
             }
         },
         subchart: {
