@@ -34,3 +34,28 @@ var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
             .text(function(d) { return d.text; });
     }
 });
+
+//var epu_index = d3.json('http://epu-index.herokuapp.com/api/epu/', function(d) {
+var epu_index = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select date,epu from epu_tail', function(d) {
+    console.log('Im in');
+    var dates = d.rows.map(function(f) {return new Date(f.date.substr(6, 4), f.date.substr(3, 2)-1, f.date.substr(0,2));});
+    var values = d.rows.map(function(f) {return f.epu;});
+    c3.generate({
+        bindto: "#linechart",
+        data: {
+            x: "date",
+            columns: [
+                ["date"].concat(dates),
+                ["epu index"].concat(values)
+            ]
+        },
+        axis: {
+            x: {
+                type: 'timeseries'
+            }
+        },
+        subchart: {
+            show: true
+        }
+    });
+})
