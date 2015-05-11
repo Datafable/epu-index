@@ -1,3 +1,4 @@
 .metadata
 ENV/*
 crawling/*
+*.pyc
