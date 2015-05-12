@@ -1,5 +1,5 @@
 .metadata
 ENV/*
-crawling/*
+_crawling/*
 *.pyc
 staticfiles
