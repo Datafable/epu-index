@@ -3,10 +3,10 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from epu_scrapy.items import Article
 
-class NieuwsbladSpider(CrawlSpider):
-    name = 'nieuwsblad' # name of the spider, to be used when running from command line
-    allowed_domains = ['www.nieuwsblad.be']
-    start_urls = ['http://www.nieuwsblad.be/zoeken?keyword=economie&daterange=today&datestart=&dateend=&categoryrange=00000000-0000-0000-0000-000000000000']
+class RedactieSpider(CrawlSpider):
+    name = 'deredactie' # name of the spider, to be used when running from command line
+    allowed_domains = ['www.deredactie.be']
+    start_urls = ['']
     rules = (
         Rule(LinkExtractor(allow=('zoeken\/.*page=[0-9]+'))),
         Rule(LinkExtractor(allow=('\/cnt\/')), callback='parse_article'),
