@@ -5,11 +5,11 @@ from epu_scrapy.items import Article
 
 class DemorgenSpider(CrawlSpider):
     name = 'demorgen' # name of the spider, to be used when running from command line
-    allowed_domains = ['http://www.demorgen.be']
-    start_urls = ['http://www.demorgen.be/zoek/?query=economie']
+    allowed_domains = ['www.demorgen.be']
+    start_urls = ['http://www.demorgen.be/zoek/?query=economie&sorting=DATE_DESC&date=LAST_WEEK']
     rules = (
-        #Rule(LinkExtractor(allow=('zoek\/.*page=[0-9]+'))),
-        Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+\/$'), restrict_xpaths=('//div[contains(concat(" ", normalize-space(@class), " "), " results-listing ")]')),
+        Rule(SgmlLinkExtractor(allow=('zoek\/.*LAST_WEEK.*page=[0-9]+'))),
+        Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
              callback='parse_article'),
     ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
 
