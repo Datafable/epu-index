@@ -8,3 +8,4 @@ class Article(scrapy.Item):
     text = scrapy.Field()
     title = scrapy.Field()
     datetime = scrapy.Field()
+    url = scrapy.Field()

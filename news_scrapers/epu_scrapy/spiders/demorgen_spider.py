@@ -42,6 +42,7 @@ class DemorgenSpider(CrawlSpider):
 
         # now create an Article item, and return it. All Articles created during scraping will can be written to an output file when the -o option is given.
         article = Article()
+        article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
         article['datetime'] = datetime_str
