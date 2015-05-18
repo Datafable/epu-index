@@ -42,6 +42,7 @@ var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select da
         bindto: "#linechart",
         data: {
             x: "date",
+            type: "area-spline",
             columns: [
                 ["date"].concat(dates),
                 ["epu index"].concat(values)
