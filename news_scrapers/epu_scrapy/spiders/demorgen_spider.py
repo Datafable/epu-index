@@ -40,7 +40,7 @@ class DemorgenSpider(CrawlSpider):
         article_full_text_fragments = article_div.xpath('div[@itemprop="articleBody"]/descendant::*/text()').extract()
         article_full_text = '\n'.join([x.strip().encode('utf-8') for x in article_full_text_fragments]).strip()
 
-        # now create an Article item, and return it. All Articles created during scraping will can be written to an output file when the -o option is given.
+        # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
         article = Article()
         article['url'] = response.url
         article['intro'] = article_intro
