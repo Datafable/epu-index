@@ -1,5 +1,7 @@
 import csv
 
+from datetime import datetime
+
 from django.http import StreamingHttpResponse
 from django.db import models
 
@@ -61,5 +63,27 @@ def epu_streaming_csv(request):
 
 
 class EpuViewSet(viewsets.ReadOnlyModelViewSet):
+    base_name = 'epu'
     queryset = EpuIndexScore.objects.all()
     serializer_class = EpuSerializer
+
+    def get_queryset(self):
+        def _param_to_date(string):
+            """ Takes a YYYY-MM-DD string and return a Date object."""
+            return datetime.strptime(string, '%Y-%m-%d').date()
+
+        queryset = EpuIndexScore.objects.all()
+
+        # Optional filtering by start/end date.
+        # Params are named 'start' and 'end' and use YYYY-MM-DD format.
+        # Filters are inclusive (<= / >=)
+        start_date = self.request.query_params.get('start', None)
+        end_date = self.request.query_params.get('end', None)
+
+        if start_date is not None:
+            queryset = queryset.filter(date__gte=_param_to_date(start_date))
+
+        if end_date is not None:
+            queryset = queryset.filter(date__lte=_param_to_date(end_date))
+
+        return queryset
