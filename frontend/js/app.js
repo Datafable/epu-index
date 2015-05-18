@@ -1,4 +1,4 @@
-var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30', function(d) {
+var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
     var fill = d3.scale.category20(); // TODO: create custom color schema
     var scalingFactor = 7; // TODO: should be determined based on input counts
 
@@ -14,9 +14,8 @@ var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
         .on("end", draw)
         .start();
 
-
     function draw(words) {
-        d3.select("body").append("svg")
+        d3.select("#wordcloud").append("svg")
             .attr("width", 300)
             .attr("height", 300)
             .append("g")
@@ -35,7 +34,7 @@ var words = d3.json('http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
     }
 });
 
-//var epu_index = d3.json('http://epu-index.herokuapp.com/api/epu/', function(d) {
+//var epu_index = d3.json("http://epu-index.herokuapp.com/api/epu/", function(d) {
 var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select date,epu from epu_tail where date<='2013-12-31' and date>='2013-01-01'", function(d) {
     var dates = d.rows.map(function(f) {return new Date(f.date);});
     var values = d.rows.map(function(f) {return f.epu;});
@@ -43,6 +42,7 @@ var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select da
         bindto: "#linechart",
         data: {
             x: "date",
+            type: "area-spline",
             columns: [
                 ["date"].concat(dates),
                 ["epu index"].concat(values)
@@ -50,7 +50,7 @@ var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select da
         },
         axis: {
             x: {
-                type: 'timeseries',
+                type: "timeseries",
                 tick: {
                     format: "%Y-%m-%d"
                 }
@@ -60,4 +60,4 @@ var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select da
             show: true
         }
     });
-})
+});
