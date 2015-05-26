@@ -3,14 +3,15 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
-from time import strptime
+from time import strptime, strftime
+import re
 
 class DeredactieSpider(CrawlSpider):
     name = 'deredactie' # name of the spider, to be used when running from command line
     allowed_domains = ['www.deredactie.be']
     today = datetime.today()
     search_day = today - timedelta(days=1) # search for articles of yesterday
-    search_day_str = '{0}/{1}/{2}'.format(today.day, today.month, today.year)
+    search_day_str = '{0}/{1}/{2}'.format(today.day, today.month, today.year % 100)
     start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text=economie&type=text&range=atdate&isdate={0}&sort=date&action=submit&advancedsearch=on'.format(search_day_str)]
 
     def parse(self, response):
@@ -25,7 +26,7 @@ class DeredactieSpider(CrawlSpider):
             for i in range(0, nr_of_articles, 20):
                 yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
         else:
-            raise scapy.CloseSpider("could not parse number of articles from {0}".format(response.url))
+            raise scrapy.CloseSpider("could not parse number of articles from {0}".format(response.url))
 
 
 
@@ -37,7 +38,7 @@ class DeredactieSpider(CrawlSpider):
         datetime_str = ' '.join(datetime_str_parts).strip()
         datetime_str_stripped = re.findall('[0-9]+/[0-9]+/[0-9]+[^0-9]+[0-9]+:[0-9]+', datetime_str)[0]
         dt = strptime(datetime_str_stripped, '%d/%m/%Y - %H:%M')
-        datetime_iso_str = dt.strftime('%Y-%m-%d %H:%M')
+        datetime_iso_str = strftime('%Y-%m-%d %H:%M', dt)
         return datetime_iso_str
 
 
@@ -53,94 +54,41 @@ class DeredactieSpider(CrawlSpider):
         link_set = set([x.encode('utf-8') for x in links])
         for l in link_set:
             if l is not '#':
-                if l [0] == '/':
-                    l = 'http://deredactie.be' + l
+                # an article link can point to a single article page, or a storyline page, which includes several articles.
+                # in both cases, the id of the actual article that is pointed to can be found in the url. In the case
+                # of a storyline, the url is like /cm/vrtnieuws/buitenland/<storylineid>?eid=<articleid> while for a
+                # single article page, the url is /cm/vrtnieuws/binnenland/<articleid>. Both a storylineid and a articleid
+                # look something like 1.193019, which will be matched by the regular expression pattern [0-9.]+
+                article_id = re.findall('[0-9.]+', l)[-1] # the last id in the url is the article id
+                l = 'http://deredactie.be/cm/' + l
                 yield scrapy.Request(l, callback=self.parse_article)
 
 
-    def parse_article(self, response):
+    def parse_article(self, response, article_id):
         """
-        De redactie uses single article pages and storyline pages. The difference can be determined by
-        examining the url. If it contains the parameter '?eid=<some number>', then this page contains
-        a storyline. A storyline consists of several related articles. The article that the search page
-        was pointing to is captured in a html element with the id that is pointed to by the '?eid' url
-        paramater.
-        The parsing of storyline pages and single article pages is done by two distinct functions:
-        parse_article_from_storyline and parse_single_article_page.
+        Parse the article content page
         """
-        match = re.search('\?eid=([0-9.]+)', response.url)
-        if match:
-            # This link points to a storyline containing several articles on one page.
-            article_id = match.groups(1)
-            article = self.parse_article_from_storyline(response, article_id)
-        else:
-            article = self.parse_single_article_page(response)
-        return article
-
-
-    def parse_article_from_storyline(self, response, article_id):
-        """
-        Parse the article with id article_id from the storyline page.
-        """
-        referred_article = response.xpath('//li[@id="{0}"]'.format(article_id))
 
         # search for article title
-        title_parts = referred_article.xpath('descendant::div[@id="articlehead"]/h1/text()').extract()
+        title_parts = response.xpath('//div[@id="articlehead"]/h1/text()').extract()
         if len(title_parts) > 0:
             title = ' '.join(set(title_parts)).encode('utf-8').strip()
         else:
             title = ''
 
         # search for article published date
-        datetime_elements_parts = referred_article.xpath('descendant::small[@id="pubdate"]/strong')
-        if len(datetime_elements_parts) > 0:
-            datetime_iso_str = self.parse_published_datetime(datetime_elements_parts)
-        else:
-            datetime_iso_str = ''
-
-        # search for article intro text
-        article_intro_parts = referred_article.xpath('descendant::div[@id="articlehead"]/div[@id="intro"]/strong/text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts]).strip()
-
-        # search for article full text
-        article_full_text_fragments = referred_article.xpath('descendant::div[@id="articlebody"]/descendant::p/text()').extract()
-        # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
-        article = Article()
-        article['url'] = response.url
-        article['intro'] = article_intro
-        article['title'] = title
-        article['datetime'] = datetime_iso_str
-        article['text'] = article_full_text
-        return article
-
-
-
-    def parse_single_article_page(self, response):
-        """
-        Parse the article from a page containing a single article
-        """
-
-        # search for article title
-        title_parts = response.xpath('//div[@id="articlehead"]/h1')
-        if len(title_parts) > 0:
-            title_parts_str = [x.encode('utf-8') for x in title_parts[0].xpath('text()').extract()]
-            title = ' '.join(title_parts_str).strip()
-        else:
-            title = ''
-
-        # search for article published date
-        datetime_element_parts = response.xpath('//small[@id="pubdate"]/strong')
-        if len(datetime_elements_parts) > 0:
+        datetime_element_parts = response.xpath('//small[@id="pubdate"]/strong/text()').extract()
+        if len(datetime_element_parts) > 0:
             datetime_iso_str = self.parse_published_datetime(datetime_element_parts)
         else:
             datetime_iso_str = ''
 
         # search for article intro text
-        article_intro_parts = response.xpath('//div[@id="article"]/div[@id="articlehead"]/div[@id="intro"]/strong/text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts])
+        article_intro_parts = response.xpath('//div[@id="intro"]/strong/text()').extract()
+        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts]).strip()
 
         # search for article full text
-        article_full_text_fragments = response.xpath('//div[@id="article"]/div[@id="articlebody"]/div[contains(concat(" ", normalize-space(@class), " "), " articlecontent ")]/descendant::*/text()').extract()
+        article_full_text_fragments = response.xpath('//div[@id="articlebody"]/descendant::p/text()').extract()
         article_full_text = '\n'.join([x.strip().encode('utf-8') for x in article_full_text_fragments]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
