@@ -1,6 +1,5 @@
 import scrapy
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.contrib.spiders import CrawlSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
 from time import strptime, strftime
