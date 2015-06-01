@@ -11,7 +11,7 @@ class DeredactieSpider(CrawlSpider):
     allowed_domains = ['deredactie.be']
     today = datetime.today()
     search_day = today - timedelta(days=1) # search for articles of yesterday
-    search_day_str = '{0}/{1}/{2}'.format(today.day, today.month, today.year % 100)
+    search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
     pagesize = 20
     start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text=economie&type=text&range=atdate&isdate={0}&sort=date&action=submit&advancedsearch=on'.format(search_day_str)]
 
