@@ -2,17 +2,31 @@ import scrapy
 from scrapy.contrib.spiders import CrawlSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
-from time import strptime, strftime
+from time import strptime, strftime, mktime
 import re
+import json
+import os
 
 class DeredactieSpider(CrawlSpider):
     name = 'deredactie' # name of the spider, to be used when running from command line
     allowed_domains = ['deredactie.be']
-    today = datetime.today()
-    search_day = today - timedelta(days=1) # search for articles of yesterday
-    search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    term = settings['term']
+    if type(settings['period']) is not dict:
+        today = datetime.today()
+        if settings['period'] == 'yesterday':
+            search_day = today - timedelta(days=1) # search for articles of yesterday
+        elif settings['period'] == 'today':
+            search_day = today
+        search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
+        start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text={0}&type=text&range=atdate&isdate={1}&sort=date&action=submit&advancedsearch=on'.format(term, search_day_str)]
+    else:
+        start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
+        start_str = '{0}/{1}/{2}'.format(start.day, start.month, start.year % 100)
+        end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
+        end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year % 100)
+        start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text={0}&type=text&range=betweendate&startdate={1}&enddate={2}&sort=date&action=submit&advancedsearch=on'.format(term, start_str, end_str)]
     pagesize = 20
-    start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text=economie&type=text&range=atdate&isdate={0}&sort=date&action=submit&advancedsearch=on'.format(search_day_str)]
 
     def parse(self, response):
         """
@@ -90,9 +104,16 @@ class DeredactieSpider(CrawlSpider):
         article_full_text_fragments = response.xpath('//div[@id="articlebody"]/descendant::p/descendant-or-self::*/text()').extract()
         article_full_text = ' '.join([x.strip().encode('utf-8') for x in article_full_text_fragments]).strip()
 
+        # reconstruct the url to the nicely rendered page
+        url_parts = response.url.split('/')
+        article_id = url_parts.pop()
+        url_parts.append('vrtnieuws')
+        url_parts.append(article_id)
+        url = '/'.join(url_parts)
+
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
         article = Article()
-        article['url'] = response.url
+        article['url'] = url
         article['intro'] = article_intro
         article['title'] = title
         article['datetime'] = datetime_iso_str
