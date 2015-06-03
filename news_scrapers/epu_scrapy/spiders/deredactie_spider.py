@@ -7,10 +7,10 @@ import re
 import json
 import os
 
-class DeredactieSpider(CrawlSpider):
-    name = 'deredactie' # name of the spider, to be used when running from command line
-    allowed_domains = ['deredactie.be']
-    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+def set_start_urls(settings):
+    """
+    Based on the dates given in the settings file, construct the start urls for the spider
+    """
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
@@ -26,6 +26,14 @@ class DeredactieSpider(CrawlSpider):
         end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
         end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year % 100)
         start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text={0}&type=text&range=betweendate&startdate={1}&enddate={2}&sort=date&action=submit&advancedsearch=on'.format(term, start_str, end_str)]
+    return start_urls
+
+
+class DeredactieSpider(CrawlSpider):
+    name = 'deredactie' # name of the spider, to be used when running from command line
+    allowed_domains = ['deredactie.be']
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    start_urls = set_start_urls(settings)
     pagesize = 20
 
     def parse(self, response):

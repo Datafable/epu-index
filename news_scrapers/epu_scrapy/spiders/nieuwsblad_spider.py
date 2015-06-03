@@ -1,12 +1,42 @@
-import scrapy
+import json
+import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from epu_scrapy.items import Article
+from datetime import datetime, timedelta
+from time import strptime
+
+
+def set_start_urls(settings):
+    """
+    Based on the dates given in the settings file, construct the start urls for the spider
+    """
+    term = settings['term']
+    if type(settings['period']) is not dict:
+        today = datetime.today()
+        if settings['period'] == 'yesterday':
+            search_day = today - timedelta(days=1) # search for articles of yesterday
+        elif settings['period'] == 'today':
+            search_day = today
+        search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year)
+        start_str = search_day_str
+        end_str = search_day_str
+        print 'start: {0}, end: {1}'.format(start_str, end_str)
+    else:
+        start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
+        start_str = '{0}/{1}/{2}'.format(start.day, start.month, start.year)
+        end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
+        end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year)
+    start_urls = ['http://www.nieuwsblad.be/zoeken?keyword={0}&datestart={1}&dateend={2}'.format(term, start_str, end_str)]
+    print start_urls[0]
+    return start_urls
+
 
 class NieuwsbladSpider(CrawlSpider):
     name = 'nieuwsblad' # name of the spider, to be used when running from command line
     allowed_domains = ['www.nieuwsblad.be']
-    start_urls = ['http://www.nieuwsblad.be/zoeken?keyword=economie&daterange=today&datestart=&dateend=&categoryrange=00000000-0000-0000-0000-000000000000']
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    start_urls = set_start_urls(settings)
     rules = (
         Rule(LinkExtractor(allow=('zoeken\/.*page=[0-9]+'))),
         Rule(LinkExtractor(allow=('\/cnt\/')), callback='parse_article'),

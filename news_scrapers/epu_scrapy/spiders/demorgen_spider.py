@@ -1,12 +1,38 @@
-import scrapy
+import json
+import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from epu_scrapy.items import Article
+from datetime import datetime, timedelta
+from time import strptime
+
+def set_start_urls(settings):
+    """
+    Based on the dates given in the settings file, construct the start urls for the spider
+    """
+    term = settings['term']
+    if type(settings['period']) is not dict:
+        today = datetime.today()
+        if settings['period'] == 'yesterday':
+            search_day = today - timedelta(days=1) # search for articles of yesterday
+        elif settings['period'] == 'today':
+            search_day = today
+        search_day_str = '{0}-{1}-{2}'.format(search_day.day, search_day.month, search_day.year)
+        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, search_day_str, search_day_str)]
+    else:
+        start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
+        start_str = '{0}-{1}-{2}'.format(start.day, start.month, start.year)
+        end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
+        end_str = '{0}-{1}-{2}'.format(end.day, end.month, end.year)
+        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, start_str, end_str)]
+    return start_urls
+
 
 class DemorgenSpider(CrawlSpider):
     name = 'demorgen' # name of the spider, to be used when running from command line
     allowed_domains = ['www.demorgen.be']
-    start_urls = ['http://www.demorgen.be/zoek/?query=economie&sorting=DATE_DESC&date=LAST_WEEK']
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    start_urls = set_start_urls(settings)
     rules = (
         Rule(SgmlLinkExtractor(allow=('zoek\/.*LAST_WEEK.*page=[0-9]+'))),
         Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
