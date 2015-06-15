@@ -126,4 +126,5 @@ class DeredactieSpider(CrawlSpider):
         article['title'] = title
         article['datetime'] = datetime_iso_str
         article['text'] = article_full_text
+        article['journal'] = self.name
         return article

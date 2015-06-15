@@ -75,4 +75,5 @@ class GazetVanAntwerpenSpider(CrawlSpider):
         article['title'] = title
         article['datetime'] = datetime_str
         article['text'] = article_full_text
+        article['journal'] = self.name
         return article
