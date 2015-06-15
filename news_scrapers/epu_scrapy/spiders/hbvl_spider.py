@@ -21,14 +21,12 @@ def set_start_urls(settings):
         search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year)
         start_str = search_day_str
         end_str = search_day_str
-        print 'start: {0}, end: {1}'.format(start_str, end_str)
     else:
         start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
         start_str = '{0}/{1}/{2}'.format(start.day, start.month, start.year)
         end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
         end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year)
     start_urls = ['http://www.hbvl.be/zoeken?keyword={0}&datestart={1}&dateend={2}'.format(term, start_str, end_str)]
-    print start_urls[0]
     return start_urls
 
 
