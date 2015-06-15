@@ -1,5 +1,6 @@
 import scrapy
 from scrapy.contrib.spiders import CrawlSpider
+from scrapy.exceptions import CloseSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
 from time import strptime, strftime, mktime
@@ -14,10 +15,9 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] == 'yesterday':
-            search_day = today - timedelta(days=1) # search for articles of yesterday
-        elif settings['period'] == 'today':
-            search_day = today
+        if settings['period'] is not 'yesterday':
+            CloseSpider("unknown period setting. See the scrapers README for more information.")
+        search_day = today - timedelta(days=1) # search for articles of yesterday
         search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
         start_urls = ['http://deredactie.be/cm/vrtnieuws/1.516538?text={0}&type=text&range=atdate&isdate={1}&sort=date&action=submit&advancedsearch=on'.format(term, search_day_str)]
     else:

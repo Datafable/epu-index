@@ -2,6 +2,7 @@ import json
 import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.exceptions import CloseSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
 from time import strptime
@@ -13,12 +14,15 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] == 'yesterday':
-            search_day = today - timedelta(days=1) # search for articles of yesterday
-        elif settings['period'] == 'today':
-            search_day = today
-        search_day_str = '{0}-{1}-{2}'.format(search_day.day, search_day.month, search_day.year)
-        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, search_day_str, search_day_str)]
+        if settings['period'] is not 'yesterday':
+            CloseSpider("unknown period setting. See the scrapers README for more information.")
+        yesterday = today - timedelta(days=1)
+        yesterday_str = '{0}-{1}-{2}'.format(yesterday.day, yesterday.month, yesterday.year)
+        today_str = '{0}-{1}-{2}'.format(today.day, today.month, today.year)
+        # De Morgen does not allow us to search for articles published yesterday using a format like `from=yesterday&to=yesterday`.
+        # It yields no results because the `to` parameter is excluding the results we expect to find.
+        # Therefore, we have to include articles from today, possibly duplicating articles that were already scraped yesterday.
+        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, yesterday_str, today_str)]
     else:
         start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
         start_str = '{0}-{1}-{2}'.format(start.day, start.month, start.year)
