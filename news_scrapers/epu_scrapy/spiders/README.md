@@ -45,7 +45,8 @@ returned (the `to` parameter is exclusive and hence prevents any article to matc
 the other spiders, the spider will include the articles of the current day. This means that some articles will be
 scraped two times, but these duplicates are prevented from entering the database.
 
-The *De Morgen* spider uses [Scrapy Rules](**insert link**) to crawl the search results. The first rule will follow TODO: insert link to scrapy Rules)
+The *De Morgen* spider uses [Scrapy Rules](http://doc.scrapy.org/en/latest/topics/spiders.html?highlight=rule#crawling-rules)
+ to crawl the search results. The first rule will follow
 links to subsequent search pages recursively. The second rule will follow links to article pages. Note the
 `restrict_xpath` parameter that limits the links to the ones in the `ul` element with class `articles-list`. This
 prevents the spider from following links to articles that are shown in the websites header or sidebar.
