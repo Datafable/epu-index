@@ -30,11 +30,10 @@ var app = function() {
 
     
     // Create overview chart
-    var epuPerMonthData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
-    d3.json(epuPerMonthData, function(d) {
+    var epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+    d3.json(epuPerMonth, function(d) {
         var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
             epu = d.rows.map(function(e) { return e.epu; }); // Remove "rows. for final endpoint"
-            formatTooltipTitle = d3.time.format("%Y-%m");
 
         var overviewChart = c3.generate({
             axis: {
@@ -84,6 +83,63 @@ var app = function() {
                 // show: false
                 format: {
                     title: function (d) { return formatAsYearMonth(d); }
+                }
+            }
+        });
+    });
+
+    // Create detailed chart
+    var epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2012-01-01&end=2012-12-31";
+    d3.json(epuPerDay, function(d) {
+        var days = d.map(function(e) { return new Date(e.date); }),
+            epu = d.map(function(e) { return e.epu; });
+
+        var detailedChart = c3.generate({
+            axis: {
+                x: {
+                    localtime: false,
+                    padding: {
+                        // left: 0,
+                        // right: 0
+                    },
+                    tick: {
+                        // values: createTickSeries(d3.extent(months),"year"),
+                        format: "%Y-%m-%d"
+                    },
+                    type: "timeseries"
+                },
+                y: {
+                    // show: false
+                }
+            },
+            bindto: "#detailed-chart",
+            data: {
+                colors: {
+                    "epu": "black"
+                },
+                columns: [
+                    ["days"].concat(days),
+                    ["epu"].concat(epu)
+                ],
+                type: "area-spline",
+                x: "days"
+            },
+            legend: {
+                show: false
+            },
+            padding: {
+                // left: 20,
+                // right: 20
+            },
+            point: {
+                // show: false
+            },
+            size: {
+                // height: 100
+            },
+            tooltip: {
+                format: {
+                    // title: function (d) { return formatAsYearMonth(d); }
                 }
             }
         });
