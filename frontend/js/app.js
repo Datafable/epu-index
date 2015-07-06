@@ -15,7 +15,7 @@ var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
         .start();
 
     function draw(words) {
-        d3.select("#wordcloud").append("svg")
+        d3.select("#word-cloud").append("svg")
             .attr("width", 300)
             .attr("height", 300)
             .append("g")
@@ -40,7 +40,7 @@ var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (s
     var values = d.rows.map(function(f) {return f.epu;});
     var dates2 = []
     c3.generate({
-        bindto: "#linechart",
+        bindto: "#main-line-chart",
         data: {
             x: "date",
             type: "area-spline",
