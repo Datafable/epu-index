@@ -1,0 +1,25 @@
+body {
+    background-color: #d9e8f0;
+    color: #5e6568;
+    font: 0.75em Arial, Helvetica, sans-serif;
+    line-height: 19px;  
+}
+.main {
+    margin: 0 auto;
+    width: 800px;
+}
+.node-box {
+    background-color: #fdfefe;
+    border: 1px solid #dce7ed;
+    border-bottom: #cfdbe1;
+    border-top: 0;
+}
+.node-content {
+    border: 1px solid #ffffff;
+    border-bottom: 1px solid #e8ebec;
+    margin: 0;
+    padding: 22px 22px 11px;
+}
+.c3-region.selection {
+    fill: #000000;
+}

@@ -1,3 +1,156 @@
+var app = function() {
+
+    // Chart layout functions
+    var formatAsYearAndMonth = d3.time.format("%Y-%m");
+    var formatAsFullDate = d3.time.format("%Y-%m-%d")
+    var createTickSeries = function(extent,aggregateBy) {
+        // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
+        var min = moment.utc(extent[0]),
+            max = moment.utc(extent[1]),
+            date = min,
+            ticks = [];
+        if (aggregateBy == "years") {
+            date = min.month(0).date(1); // Set month and day to 1 (1st of January)
+        } else if (aggregateBy == "months") {
+            date = min.date(1); // Set day to 1 (1st of month)
+        }
+            
+        while (date <= max) {
+            ticks.push(new Date(date));
+            date.add(1, aggregateBy);
+        }
+        return ticks;
+    }
+
+    var showYearRegion = function(month) {
+            // Given a month (full Date object), get dates 6 months before and after.
+            var startMonth = new Date(new Date(month).setMonth(month.getMonth()-6)),
+                endMonth = new Date(new Date(month).setMonth(month.getMonth()+6))
+
+            console.log(month + ":" + startMonth + " " + endMonth);
+            overviewChart.regions.remove()
+            overviewChart.regions.add([
+                { axis: "x", start: startMonth, end: endMonth } 
+            ]);
+        };
+
+    
+    // Create overview chart
+    var epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+    d3.json(epuPerMonth, function(d) {
+        var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
+            epu = d.rows.map(function(e) { return e.epu; }); // Remove "rows. for final endpoint"
+
+        var overviewChart = c3.generate({
+            axis: {
+                x: {
+                    localtime: false,
+                    padding: {
+                        left: 0,
+                        right: 0
+                    },
+                    tick: {
+                        values: createTickSeries(d3.extent(months),"years"),
+                        format: "%Y"
+                    },
+                    type: "timeseries"
+                },
+                y: {
+                    show: false
+                }
+            },
+            bindto: "#overview-chart",
+            data: {
+                columns: [
+                    ["months"].concat(months),
+                    ["epu"].concat(epu)
+                ],
+                // onclick: function (d) { showYearRegion(d.x); },
+                type: "area-spline",
+                x: "months"
+            },
+            legend: {
+                show: false
+            },
+            padding: {
+                left: 20,
+                right: 20
+            },
+            point: {
+                show: false
+            },
+            size: {
+                height: 100
+            },
+            regions: [
+                { axis: "x", start: "2011-11-03", end: "2012-11-02", class: "selection"}
+            ],
+            tooltip: {
+                // show: false
+                format: {
+                    title: function (d) { return formatAsYearAndMonth(d); }
+                }
+            }
+        });
+    });
+
+    // Create detailed chart
+    var epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
+    d3.json(epuPerDay, function(d) {
+        var days = d.map(function(e) { return new Date(e.date); }),
+            epu = d.map(function(e) { return e.epu; });
+
+        var detailedChart = c3.generate({
+            axis: {
+                x: {
+                    localtime: false,
+                    padding: {
+                        left: 0,
+                        right: 0
+                    },
+                    tick: {
+                        values: createTickSeries(d3.extent(days),"months"),
+                        format: "%Y-%m"
+                    },
+                    type: "timeseries"
+                }
+            },
+            bindto: "#detailed-chart",
+            data: {
+                columns: [
+                    ["days"].concat(days),
+                    ["epu"].concat(epu)
+                ],
+                type: "area-spline",
+                x: "days"
+            },
+            legend: {
+                show: false
+            },
+            padding: {
+                left: 20,
+                right: 20
+            },
+            point: {
+                show: false
+            },
+            size: {
+                height: 300
+            },
+            tooltip: {
+                format: {
+                    title: function (d) { return formatAsFullDate(d); }
+                }
+            }
+        });
+    });
+}();
+
+
+
+
+
+
 var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
     var fill = d3.scale.category20(); // TODO: create custom color schema
     var scalingFactor = 7; // TODO: should be determined based on input counts
@@ -15,7 +168,7 @@ var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
         .start();
 
     function draw(words) {
-        d3.select("#wordcloud").append("svg")
+        d3.select("#word-cloud").append("svg")
             .attr("width", 300)
             .attr("height", 300)
             .append("g")
@@ -32,33 +185,4 @@ var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
             })
             .text(function(d) { return d.text; });
     }
-});
-
-//var epu_index = d3.json("http://epu-index.herokuapp.com/api/epu/", function(d) {
-var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY  to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')", function(d) {
-    var dates = d.rows.map(function(f) {return new Date(f.date);});
-    var values = d.rows.map(function(f) {return f.epu;});
-    var dates2 = []
-    c3.generate({
-        bindto: "#linechart",
-        data: {
-            x: "date",
-            type: "area-spline",
-            columns: [
-                ["date"].concat(dates),
-                ["epu index"].concat(values)
-            ]
-        },
-        axis: {
-            x: {
-                type: "timeseries",
-                tick: {
-                    format: "%Y-%m"
-                }
-            }
-        },
-        subchart: {
-            show: true
-        }
-    });
 });
