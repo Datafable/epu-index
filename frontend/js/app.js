@@ -109,32 +109,3 @@ var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
             .text(function(d) { return d.text; });
     }
 });
-
-//var epu_index = d3.json("http://epu-index.herokuapp.com/api/epu/", function(d) {
-var epu_index = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY  to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')", function(d) {
-    var dates = d.rows.map(function(f) {return new Date(f.date);});
-    var values = d.rows.map(function(f) {return f.epu;});
-    var dates2 = []
-    c3.generate({
-        bindto: "#main-line-chart",
-        data: {
-            x: "date",
-            type: "area-spline",
-            columns: [
-                ["date"].concat(dates),
-                ["epu index"].concat(values)
-            ]
-        },
-        axis: {
-            x: {
-                type: "timeseries",
-                tick: {
-                    format: "%Y-%m"
-                }
-            }
-        },
-        subchart: {
-            show: true
-        }
-    });
-});
