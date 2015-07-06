@@ -4,14 +4,19 @@ var app = function() {
     var formatAsYearMonth = d3.time.format("%Y-%m");
     var createTickSeries = function(extent,aggregateBy) {
         // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
-        var min = new Date(extent[0]),
-            max = new Date(extent[1]),
+        var min = moment.utc(extent[0]),
+            max = moment.utc(extent[1]),
+            date = min,
             ticks = [];
-
-        if (aggregateBy == "year") {
-            for (year = min.getUTCFullYear(); year <= max.getUTCFullYear(); year++) {
-                ticks.push(new Date(year + "-01-01"));
-            }
+        if (aggregateBy == "years") {
+            date = min.month(0).date(1); // Set month and day to 1 (1st of January)
+        } else if (aggregateBy == "months") {
+            date = min.date(1); // Set day to 1 (1st of month)
+        }
+            
+        while (date <= max) {
+            ticks.push(new Date(date));
+            date.add(1, aggregateBy);
         }
         return ticks;
     }
@@ -44,7 +49,7 @@ var app = function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(d3.extent(months),"year"),
+                        values: createTickSeries(d3.extent(months),"years"),
                         format: "%Y"
                     },
                     type: "timeseries"
@@ -89,7 +94,7 @@ var app = function() {
     });
 
     // Create detailed chart
-    var epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2012-01-01&end=2012-12-31";
+    var epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
     d3.json(epuPerDay, function(d) {
         var days = d.map(function(e) { return new Date(e.date); }),
             epu = d.map(function(e) { return e.epu; });
@@ -103,8 +108,8 @@ var app = function() {
                         // right: 0
                     },
                     tick: {
-                        // values: createTickSeries(d3.extent(months),"year"),
-                        format: "%Y-%m-%d"
+                        values: createTickSeries(d3.extent(days),"months"),
+                        format: "%Y-%m"
                     },
                     type: "timeseries"
                 },
