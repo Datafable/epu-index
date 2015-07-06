@@ -1,3 +1,52 @@
+var app = function() {
+    var createAndPopulateOverviewChart = function() {
+        // var endpoint = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2013-01-01&end=2013-02-01",
+        var endpoint = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY  to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')",
+        d3.json(endpoint, function(d) {
+            var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
+                epu = d.rows.map(function(e) { return e.epu; }), // Remove "rows. for final endpoint"
+                overviewChart = c3.generate({
+                    axis: {
+                        x: {
+                            localtime: false,
+                            tick: {
+                                format: "%Y-%m"
+                            },
+                            type: "timeseries"
+                        },
+                        y: {
+                            tick: {
+                                format: d3.format("O")
+                            }
+                        }
+                    },
+                    bindto: "#overview-chart",
+                    data: {
+                        columns: [
+                            ["months"].concat(months),
+                            ["epu"].concat(epu)
+                        ],
+                        type: "spline",
+                        x: "months"
+                    },
+                    legend: {
+                        show: false
+                    },
+                    point: {
+                        show: false
+                    },
+                    size: {
+                        height: 100
+                    },
+                    tooltip: {
+                        show: false
+                    }
+                });
+        });
+    };
+    createAndPopulateOverviewChart();
+}();
+
 var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
     var fill = d3.scale.category20(); // TODO: create custom color schema
     var scalingFactor = 7; // TODO: should be determined based on input counts
