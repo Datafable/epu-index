@@ -2,6 +2,7 @@ var app = function() {
     var createAndPopulateOverviewChart = function() {
         // var endpoint = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2013-01-01&end=2013-02-01",
         var endpoint = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY  to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+
         d3.json(endpoint, function(d) {
             var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
                 epu = d.rows.map(function(e) { return e.epu; }), // Remove "rows. for final endpoint",
@@ -22,15 +23,21 @@ var app = function() {
                     axis: {
                         x: {
                             localtime: false,
+                            padding: {
+                                left: 0,
+                                right: 0
+                            },
                             tick: {
+                                // count: numberOfYears,
+                                culling: {
+                                    // max: numberOfYears
+                                },
                                 format: "%Y-%m"
                             },
                             type: "timeseries"
                         },
                         y: {
-                            tick: {
-                                format: d3.format("O")
-                            }
+                            show: false
                         }
                     },
                     bindto: "#overview-chart",
