@@ -1,7 +1,8 @@
 var app = function() {
 
     // Chart layout functions
-    var formatAsYearMonth = d3.time.format("%Y-%m");
+    var formatAsYearAndMonth = d3.time.format("%Y-%m");
+    var formatAsFullDate = d3.time.format("%Y-%m-%d")
     var createTickSeries = function(extent,aggregateBy) {
         // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
         var min = moment.utc(extent[0]),
@@ -60,9 +61,6 @@ var app = function() {
             },
             bindto: "#overview-chart",
             data: {
-                colors: {
-                    "epu": "black"
-                },
                 columns: [
                     ["months"].concat(months),
                     ["epu"].concat(epu)
@@ -84,10 +82,13 @@ var app = function() {
             size: {
                 height: 100
             },
+            regions: [
+                { axis: "x", start: "2011-11-03", end: "2012-11-02", class: "selection"}
+            ],
             tooltip: {
                 // show: false
                 format: {
-                    title: function (d) { return formatAsYearMonth(d); }
+                    title: function (d) { return formatAsYearAndMonth(d); }
                 }
             }
         });
@@ -104,24 +105,18 @@ var app = function() {
                 x: {
                     localtime: false,
                     padding: {
-                        // left: 0,
-                        // right: 0
+                        left: 0,
+                        right: 0
                     },
                     tick: {
                         values: createTickSeries(d3.extent(days),"months"),
                         format: "%Y-%m"
                     },
                     type: "timeseries"
-                },
-                y: {
-                    // show: false
                 }
             },
             bindto: "#detailed-chart",
             data: {
-                colors: {
-                    "epu": "black"
-                },
                 columns: [
                     ["days"].concat(days),
                     ["epu"].concat(epu)
@@ -133,18 +128,18 @@ var app = function() {
                 show: false
             },
             padding: {
-                // left: 20,
-                // right: 20
+                left: 20,
+                right: 20
             },
             point: {
-                // show: false
+                show: false
             },
             size: {
-                // height: 100
+                height: 300
             },
             tooltip: {
                 format: {
-                    // title: function (d) { return formatAsYearMonth(d); }
+                    title: function (d) { return formatAsFullDate(d); }
                 }
             }
         });

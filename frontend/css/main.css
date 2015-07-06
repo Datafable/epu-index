@@ -20,3 +20,6 @@ body {
     margin: 0;
     padding: 22px 22px 11px;
 }
+.c3-region.selection {
+    fill: #000000;
+}
