@@ -1,3 +1,4 @@
+/* Website styles */
 body {
     background-color: #d9e8f0;
     color: #5e6568;
@@ -20,6 +21,15 @@ body {
     margin: 0;
     padding: 22px 22px 11px;
 }
+
+/* Chart styles */
+#detailed-chart {
+    height: 300px;
+}
+#overview-chart {
+    height: 100px;
+}
+
 .c3-region.selection {
     fill: #000000;
 }

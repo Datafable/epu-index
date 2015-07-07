@@ -81,9 +81,6 @@ var app = function() {
                 right: 20
             },
             point: {
-            },
-            size: {
-                height: 100
                 focus: {
                     expand: {
                         r: 4
@@ -142,9 +139,6 @@ var app = function() {
                 right: 20
             },
             point: {
-            },
-            size: {
-                height: 300
                 focus: {
                     expand: {
                         r: 4
