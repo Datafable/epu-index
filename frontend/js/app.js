@@ -78,10 +78,15 @@ var app = function() {
                 right: 20
             },
             point: {
-                show: false
             },
             size: {
                 height: 100
+                focus: {
+                    expand: {
+                        r: 4
+                    }
+                },
+                r: 0
             },
             regions: [
                 { axis: "x", start: "2011-11-03", end: "2012-11-02", class: "selection"}
@@ -134,10 +139,15 @@ var app = function() {
                 right: 20
             },
             point: {
-                show: false
             },
             size: {
                 height: 300
+                focus: {
+                    expand: {
+                        r: 4
+                    }
+                },
+                r: 0
             },
             tooltip: {
                 format: {
