@@ -2,22 +2,22 @@ var app = function() {
 
     // Chart layout functions
     var formatAsYearAndMonth = d3.time.format("%Y-%m");
-    var formatAsFullDate = d3.time.format("%Y-%m-%d")
+    var formatAsFullDate = d3.time.format("%Y-%m-%d");
     var createTickSeries = function(extent,aggregateBy) {
         // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
-        var min = moment.utc(extent[0]),
-            max = moment.utc(extent[1]),
-            date = min,
+        var startDate = moment.utc(extent[0]),
+            endDate = moment.utc(extent[1]),
+            loopingDate = startDate,
             ticks = [];
         if (aggregateBy == "years") {
-            date = min.month(0).date(1); // Set month and day to 1 (1st of January)
+            loopingDate = startDate.month(0).date(1); // Set month and day to 1 (1st of January)
         } else if (aggregateBy == "months") {
-            date = min.date(1); // Set day to 1 (1st of month)
+            loopingDate = startDate.date(1); // Set day to 1 (1st of month)
         }
             
-        while (date <= max) {
-            ticks.push(new Date(date));
-            date.add(1, aggregateBy);
+        while (loopingDate <= endDate) {
+            ticks.push(new Date(loopingDate));
+            loopingDate.add(1, aggregateBy);
         }
         return ticks;
     }
