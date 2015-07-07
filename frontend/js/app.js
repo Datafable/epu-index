@@ -22,18 +22,18 @@ var app = function() {
         return ticks;
     }
 
-    var showYearRegion = function(month) {
-            // Given a month (full Date object), get dates 6 months before and after.
-            var startMonth = new Date(new Date(month).setMonth(month.getMonth()-6)),
-                endMonth = new Date(new Date(month).setMonth(month.getMonth()+6))
+    var selectYear = function(selectedDate) {
+        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after.
+        var startDate = moment.utc(selectedDate).subtract(6,"months"),
+            endDate = moment.utc(selectedDate).add(6,"months");
+        
+        console.log(selectedDate + ": " + startDate.format() + " " + endDate.format());
 
-            console.log(month + ":" + startMonth + " " + endMonth);
-            overviewChart.regions.remove()
-            overviewChart.regions.add([
-                { axis: "x", start: startMonth, end: endMonth } 
-            ]);
-        };
-
+        overviewChart.regions.remove();
+        overviewChart.regions.add([
+            { axis: "x", start: startDate, end: endDate } 
+        ]);
+    };
     
     // Create overview chart
     var overviewChart,
@@ -66,7 +66,10 @@ var app = function() {
                     ["months"].concat(months),
                     ["epu"].concat(epu)
                 ],
-                // onclick: function (d) { showYearRegion(d.x); },
+                onclick: function (d) { selectYear(d.x); },
+                selection: {
+                    grouped: true // Necessary to have onclick functionality for whole x, not only point
+                },
                 type: "area-spline",
                 x: "months"
             },
