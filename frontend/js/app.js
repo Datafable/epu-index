@@ -36,12 +36,13 @@ var app = function() {
 
     
     // Create overview chart
-    var epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+    var overviewChart,
+        epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
     d3.json(epuPerMonth, function(d) {
         var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
             epu = d.rows.map(function(e) { return e.epu; }); // Remove "rows. for final endpoint"
 
-        var overviewChart = c3.generate({
+        overviewChart = c3.generate({
             axis: {
                 x: {
                     localtime: false,
@@ -95,12 +96,13 @@ var app = function() {
     });
 
     // Create detailed chart
-    var epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
+    var detailedChart,
+        epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
     d3.json(epuPerDay, function(d) {
         var days = d.map(function(e) { return new Date(e.date); }),
             epu = d.map(function(e) { return e.epu; });
 
-        var detailedChart = c3.generate({
+        detailedChart = c3.generate({
             axis: {
                 x: {
                     localtime: false,
