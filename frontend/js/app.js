@@ -13,12 +13,13 @@ var app = function() {
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
 
     var createTickSeries = function(extent, aggregateBy) {
-        console.log("Tick series: " + extent)
-        // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
+        // Create an array of dates for x-axis ticks, by year or month.
+        // E.g. 2001-01-01, 2002-01-01,... or 2001-01-01, 2001-02-01,...
         var startDate = moment.utc(extent[0]),
             endDate = moment.utc(extent[1]),
             loopingDate = startDate,
             ticks = [];
+
         if (aggregateBy == "years") {
             loopingDate = startDate.month(0).date(1); // Set month and day to 1 (1st of January)
         } else if (aggregateBy == "months") {
@@ -40,9 +41,7 @@ var app = function() {
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
             endDate = moment.utc(selectedDate).add(6,"months");
         
-        console.log(selectedDate + ": " + startDate.format() + " " + endDate.format());
-
-        // Indicate selection on overview chart
+        // Indicate the selected dates on the overview chart
         overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
             { value: startDate },
             { value: endDate }
@@ -55,12 +54,13 @@ var app = function() {
     /*
     Chart data load functions
     */
-
     var populateDetailedChart = function(startDateString,endDateString) {
-        var data = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
-        d3.json(data, function(d) {
+        // Retrieve epu data per day and populate chart.
+        var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
+        d3.json(epuDataPerDay, function(d) {
             var datesPerDay = d.map(function(e) { return new Date(e.date); }),
                 epuPerDay = d.map(function(e) { return e.epu; });
+            
             detailedChart.load({
                 columns: [
                     ["days"].concat(datesPerDay),
@@ -74,9 +74,9 @@ var app = function() {
     Chart creation functions
     */
     var createOverviewChart = function() {
-        // This function creates an overview chart WITH data
-        var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
-        d3.json(data, function(d) {
+        // Create an overview chart WITH data
+        var epuDataPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+        d3.json(epuDataPerMonth, function(d) {
             // TODO: update endpoint and remove "rows" from mapping
             var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
                 epuPerMonth = d.rows.map(function(e) { return e.epu; });
@@ -135,7 +135,7 @@ var app = function() {
     };
 
     var createDetailedChart = function() {
-        // This function creates a detailed chart WITHOUT data
+        // Creates a detailed chart WITHOUT data
         detailedChart = c3.generate({
             axis: {
                 x: {
@@ -146,6 +146,8 @@ var app = function() {
                     },
                     tick: {
                         values: createTickSeries(datesExtent,"months"),
+                        // This will load ticks for the full potential range,
+                        // but only those of the selected data will be shown.
                         format: "%Y-%m"
                     },
                     type: "timeseries"
@@ -186,9 +188,8 @@ var app = function() {
     /*
     Get date range and create charts
     */
-    var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
-    d3.json(data, function(d) {
-        console.log(d);
+    var extentData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
+    d3.json(extentData, function(d) {
         var lastDate = new Date(d.rows[0].max),
             firstDate = new Date(d.rows[0].min);
             lastDateString = moment.utc(lastDate).format("YYYY-MM-DD"),
