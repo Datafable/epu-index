@@ -32,10 +32,14 @@ var app = function() {
         
         console.log(selectedDate + ": " + startDate.format() + " " + endDate.format());
 
-        overviewChart.regions.remove();
-        overviewChart.regions.add([
-            { axis: "x", start: startDate, end: endDate } 
+        // Indicate selection
+        overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
+            { value: startDate },
+            { value: endDate }
         ]);
+
+        // Reload detailed chart
+        // TODO
     };
 
     /*
@@ -93,9 +97,6 @@ var app = function() {
                 },
                 r: 0
             },
-            regions: [
-                { axis: "x", start: "2011-11-03", end: "2012-11-02", class: "selection"}
-            ],
             tooltip: {
                 show: false
             }
