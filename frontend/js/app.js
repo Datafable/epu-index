@@ -157,8 +157,7 @@ var app = function() {
 
 
 
-
-
+/*
 
 var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
     var fill = d3.scale.category20(); // TODO: create custom color schema
@@ -195,3 +194,4 @@ var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,c
             .text(function(d) { return d.text; });
     }
 });
+*/
