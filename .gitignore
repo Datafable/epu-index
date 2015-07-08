@@ -3,3 +3,4 @@ ENV/*
 _crawling/*
 *.pyc
 staticfiles
+.DS_Store
