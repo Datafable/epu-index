@@ -1,9 +1,19 @@
 var app = function() {
+
+    /*
+    Main variables
+    */    
+    var overviewChart,
+        detailedChart,
+        datesExtent;
+    
     /*
     Chart layout functions
     */
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
-    var createTickSeries = function(extent,aggregateBy) {
+
+    var createTickSeries = function(extent, aggregateBy) {
+        console.log("Tick series: " + extent)
         // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
         var startDate = moment.utc(extent[0]),
             endDate = moment.utc(extent[1]),
@@ -32,25 +42,54 @@ var app = function() {
         
         console.log(selectedDate + ": " + startDate.format() + " " + endDate.format());
 
-        // Indicate selection
+        // Indicate selection on overview chart
         overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
             { value: startDate },
             { value: endDate }
         ]);
 
         // Reload detailed chart
-        // TODO
+        populateDetailedChart(startDate.format("YYYY-MM-DD"),endDate.format("YYYY-MM-DD"));
     };
 
     /*
-    Create overview chart
+    Chart data load functions
     */
-    var overviewChart,
-        epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
-    d3.json(epuPerMonth, function(d) {
-        var months = d.rows.map(function(e) { return new Date(e.date); }), // Remove "rows. for final endpoint"
-            epu = d.rows.map(function(e) { return e.epu; }); // Remove "rows. for final endpoint"
+    var populateOverviewChart = function() {
+        var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+        d3.json(data, function(d) {
+            // TODO: update endpoint and remove "rows" from mapping
+            var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
+                epuPerMonth = d.rows.map(function(e) { return e.epu; });
+                console.log(d3.extent(datesPerMonth));
+            overviewChart.load({
+                columns: [
+                    ["months"].concat(datesPerMonth),
+                    ["epu"].concat(epuPerMonth)
+                ]
+            });
+        });
+    };
 
+    var populateDetailedChart = function(startDateString,endDateString) {
+        var data = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
+        d3.json(data, function(d) {
+            var datesPerDay = d.map(function(e) { return new Date(e.date); }),
+                epuPerDay = d.map(function(e) { return e.epu; });
+            detailedChart.load({
+                columns: [
+                    ["days"].concat(datesPerDay),
+                    ["epu"].concat(epuPerDay)
+                ]
+            });
+        });
+    };
+
+    /*
+    Chart creation functions
+    */
+    var createOverviewChart = function() {
+        console.log("Create chart. Extent: " + datesExtent);
         overviewChart = c3.generate({
             axis: {
                 x: {
@@ -60,7 +99,7 @@ var app = function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(d3.extent(months),"years"),
+                        values: createTickSeries(datesExtent,"years"),
                         format: "%Y"
                     },
                     type: "timeseries"
@@ -72,8 +111,8 @@ var app = function() {
             bindto: "#overview-chart",
             data: {
                 columns: [
-                    ["months"].concat(months),
-                    ["epu"].concat(epu)
+                    ["months"],
+                    ["epu"]
                 ],
                 onclick: function (d) { selectYear(d.x); },
                 selection: {
@@ -101,17 +140,9 @@ var app = function() {
                 show: false
             }
         });
-    });
+    };
 
-    /*
-    Create detailed chart
-    */
-    var detailedChart,
-        epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
-    d3.json(epuPerDay, function(d) {
-        var days = d.map(function(e) { return new Date(e.date); }),
-            epu = d.map(function(e) { return e.epu; });
-
+    var createDetailedChart = function() {
         detailedChart = c3.generate({
             axis: {
                 x: {
@@ -121,7 +152,7 @@ var app = function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(d3.extent(days),"months"),
+                        values: createTickSeries(datesExtent,"months"),
                         format: "%Y-%m"
                     },
                     type: "timeseries"
@@ -130,8 +161,8 @@ var app = function() {
             bindto: "#detailed-chart",
             data: {
                 columns: [
-                    ["days"].concat(days),
-                    ["epu"].concat(epu)
+                    ["days"],
+                    ["epu"]
                 ],
                 type: "area-spline",
                 x: "days"
@@ -157,7 +188,26 @@ var app = function() {
                 }
             }
         });
+    };
+
+    /*
+    Get date range and create charts
+    */
+    var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
+    d3.json(data, function(d) {
+        console.log(d);
+        var lastDate = new Date(d.rows[0].max),
+            firstDate = new Date(d.rows[0].min);
+            lastDateString = moment.utc(lastDate).format("YYYY-MM-DD"),
+            oneYearBeforeLastDateString = moment.utc(lastDate).subtract(1,"years").format("YYYY-MM-DD")
+
+        datesExtent = [firstDate,lastDate];
+        createOverviewChart();
+        populateOverviewChart();
+        createDetailedChart();
+        populateDetailedChart(oneYearBeforeLastDateString,lastDateString);
     });
+    
 }();
 
 
