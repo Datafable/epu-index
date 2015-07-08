@@ -1,7 +1,8 @@
 var app = function() {
-
-    // Chart layout functions
     var formatAsYearAndMonth = d3.time.format("%Y-%m");
+    /*
+    Chart layout functions
+    */
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
     var createTickSeries = function(extent,aggregateBy) {
         // Create an array of dates for axis ticks, by year or month e.g. 2001-01-01, 2002-01-01
@@ -22,6 +23,9 @@ var app = function() {
         return ticks;
     }
 
+    /*
+    Chart interaction functions
+    */
     var selectYear = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after.
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
@@ -34,8 +38,10 @@ var app = function() {
             { axis: "x", start: startDate, end: endDate } 
         ]);
     };
-    
-    // Create overview chart
+
+    /*
+    Create overview chart
+    */
     var overviewChart,
         epuPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
     d3.json(epuPerMonth, function(d) {
@@ -100,7 +106,9 @@ var app = function() {
         });
     });
 
-    // Create detailed chart
+    /*
+    Create detailed chart
+    */
     var detailedChart,
         epuPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=2011-11-03&end=2012-11-02";
     d3.json(epuPerDay, function(d) {
