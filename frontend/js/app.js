@@ -1,5 +1,4 @@
 var app = function() {
-    var formatAsYearAndMonth = d3.time.format("%Y-%m");
     /*
     Chart layout functions
     */
@@ -98,10 +97,7 @@ var app = function() {
                 { axis: "x", start: "2011-11-03", end: "2012-11-02", class: "selection"}
             ],
             tooltip: {
-                // show: false
-                format: {
-                    title: function (d) { return formatAsYearAndMonth(d); }
-                }
+                show: false
             }
         });
     });
