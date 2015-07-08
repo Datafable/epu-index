@@ -29,7 +29,6 @@ body {
 #overview-chart {
     height: 100px;
 }
-
-.c3-region.selection {
-    fill: #000000;
+.c3-xgrid-focus {
+    stroke: black!important;
 }
