@@ -55,21 +55,6 @@ var app = function() {
     /*
     Chart data load functions
     */
-    var populateOverviewChart = function() {
-        var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
-        d3.json(data, function(d) {
-            // TODO: update endpoint and remove "rows" from mapping
-            var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
-                epuPerMonth = d.rows.map(function(e) { return e.epu; });
-                console.log(d3.extent(datesPerMonth));
-            overviewChart.load({
-                columns: [
-                    ["months"].concat(datesPerMonth),
-                    ["epu"].concat(epuPerMonth)
-                ]
-            });
-        });
-    };
 
     var populateDetailedChart = function(startDateString,endDateString) {
         var data = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
@@ -89,60 +74,68 @@ var app = function() {
     Chart creation functions
     */
     var createOverviewChart = function() {
-        console.log("Create chart. Extent: " + datesExtent);
-        overviewChart = c3.generate({
-            axis: {
-                x: {
-                    localtime: false,
-                    padding: {
-                        left: 0,
-                        right: 0
+        // This function creates an overview chart WITH data
+        var data = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+        d3.json(data, function(d) {
+            // TODO: update endpoint and remove "rows" from mapping
+            var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
+                epuPerMonth = d.rows.map(function(e) { return e.epu; });
+            
+            overviewChart = c3.generate({
+                axis: {
+                    x: {
+                        localtime: false,
+                        padding: {
+                            left: 0,
+                            right: 0
+                        },
+                        tick: {
+                            values: createTickSeries(datesExtent,"years"),
+                            format: "%Y"
+                        },
+                        type: "timeseries"
                     },
-                    tick: {
-                        values: createTickSeries(datesExtent,"years"),
-                        format: "%Y"
-                    },
-                    type: "timeseries"
-                },
-                y: {
-                    show: false
-                }
-            },
-            bindto: "#overview-chart",
-            data: {
-                columns: [
-                    ["months"],
-                    ["epu"]
-                ],
-                onclick: function (d) { selectYear(d.x); },
-                selection: {
-                    grouped: true // Necessary to have onclick functionality for whole x, not only point
-                },
-                type: "area-spline",
-                x: "months"
-            },
-            legend: {
-                show: false
-            },
-            padding: {
-                left: 20,
-                right: 20
-            },
-            point: {
-                focus: {
-                    expand: {
-                        r: 4
+                    y: {
+                        show: false
                     }
                 },
-                r: 0
-            },
-            tooltip: {
-                show: false
-            }
+                bindto: "#overview-chart",
+                data: {
+                    columns: [
+                        ["months"].concat(datesPerMonth),
+                        ["epu"].concat(epuPerMonth)
+                    ],
+                    onclick: function (d) { selectYear(d.x); },
+                    selection: {
+                        grouped: true // Necessary to have onclick functionality for whole x, not only point
+                    },
+                    type: "area-spline",
+                    x: "months"
+                },
+                legend: {
+                    show: false
+                },
+                padding: {
+                    left: 20,
+                    right: 20
+                },
+                point: {
+                    focus: {
+                        expand: {
+                            r: 4
+                        }
+                    },
+                    r: 0
+                },
+                tooltip: {
+                    show: false
+                }
+            });
         });
     };
 
     var createDetailedChart = function() {
+        // This function creates a detailed chart WITHOUT data
         detailedChart = c3.generate({
             axis: {
                 x: {
@@ -203,7 +196,6 @@ var app = function() {
 
         datesExtent = [firstDate,lastDate];
         createOverviewChart();
-        populateOverviewChart();
         createDetailedChart();
         populateDetailedChart(oneYearBeforeLastDateString,lastDateString);
     });
