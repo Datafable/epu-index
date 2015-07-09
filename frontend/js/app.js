@@ -105,7 +105,7 @@ var app = function() {
                         ["months"].concat(datesPerMonth),
                         ["epu"].concat(epuPerMonth)
                     ],
-                    onclick: function (d) { selectYear(d.x); },
+                    onclick: function(d) { selectYear(d.x); },
                     selection: {
                         grouped: true // Necessary to have onclick functionality for whole x, not only point
                     },
@@ -179,7 +179,8 @@ var app = function() {
             },
             tooltip: {
                 format: {
-                    title: function (d) { return formatAsFullDate(d); }
+                    title: function(d) { return formatAsFullDate(d); },
+                    value: function(value) { return value.toFixed(2); }
                 }
             }
         });
