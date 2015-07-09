@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'corsheaders',
     'epu_index',
+    'django_extensions'
 )
 
 MIDDLEWARE_CLASSES = (
