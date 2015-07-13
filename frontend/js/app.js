@@ -39,11 +39,11 @@ var app = function() {
     /*
     Chart interaction functions
     */
-    var selectYear = function(selectedDate) {
+    var loadYear = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after.
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
             endDate = moment.utc(selectedDate).add(6,"months");
-        
+
         // Indicate the selected dates on the overview chart
         overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
             { value: startDate },
@@ -76,14 +76,14 @@ var app = function() {
     /*
     Chart creation functions
     */
-    var createOverviewChart = function() {
-        // Create an overview chart WITH data
+    var createOverviewChart = function(lastDateMinusSixMonths) {
+        // Create an overview chart WITH data, then loadYear()
         var epuDataPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
         d3.json(epuDataPerMonth, function(d) {
             // TODO: update endpoint and remove "rows" from mapping
             var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
                 epuPerMonth = d.rows.map(function(e) { return e.epu; });
-            
+
             overviewChart = c3.generate({
                 axis: {
                     x: {
@@ -108,7 +108,7 @@ var app = function() {
                         ["months"].concat(datesPerMonth),
                         ["epu"].concat(epuPerMonth)
                     ],
-                    onclick: function(d) { selectYear(d.x); },
+                    onclick: function(d) { loadYear(d.x); },
                     selection: {
                         grouped: true // Necessary to have onclick functionality for whole x, not only point
                     },
@@ -134,6 +134,9 @@ var app = function() {
                     show: false
                 }
             });
+            
+            // Once chart is created, load year data. Probably better via oninit(), but overviewChart still undefined at that point.
+            loadYear(lastDateMinusSixMonths);
         });
     };
 
@@ -194,15 +197,13 @@ var app = function() {
     */
     var extentData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
     d3.json(extentData, function(d) {
-        var lastDate = new Date(d.rows[0].max),
-            firstDate = new Date(d.rows[0].min),
-            lastDateString = moment.utc(lastDate).format("YYYY-MM-DD"),
-            oneYearBeforeLastDateString = moment.utc(lastDate).subtract(1,"years").format("YYYY-MM-DD");
+        var firstDate = new Date(d.rows[0].min),
+            lastDate = new Date(d.rows[0].max),
+            lastDateMinusSixMonths = new Date(moment.utc(lastDate).subtract(6,'months'));
 
         datesExtent = [firstDate,lastDate];
-        createOverviewChart();
+        createOverviewChart(lastDateMinusSixMonths);
         createDetailedChart();
-        populateDetailedChart(oneYearBeforeLastDateString,lastDateString);
     });
     
 }();
