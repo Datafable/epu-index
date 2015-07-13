@@ -90,7 +90,7 @@ class DeredactieSpider(CrawlSpider):
                 # of a storyline, the url is like /cm/vrtnieuws/buitenland/<storylineid>?eid=<articleid> while for a
                 # single article page, the url is /cm/vrtnieuws/binnenland/<articleid>. Both a storylineid and a articleid
                 # look something like 1.193019, which will be matched by the regular expression pattern [0-9.]+
-                article_id = re.findall('[0-9.]+', l)[-1] # the last id in the url is the article id
+                article_id = re.findall('[0-9.]+', l)[-1] # the last string that matches this pattern in the url is the article id
                 l = 'http://deredactie.be/cm/' + article_id
                 yield scrapy.Request(l, callback=self.parse_article)
 
