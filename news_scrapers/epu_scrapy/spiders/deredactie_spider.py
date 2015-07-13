@@ -47,6 +47,7 @@ class DeredactieSpider(CrawlSpider):
             # nr of articles is mentioned above list of articles and below. So the number of elements that match the xpath selector is 2
             nr_of_articles = int(re.findall('[0-9]+', nr_of_articles_element[0].encode('utf-8'))[0])
             for i in range(0, nr_of_articles, self.pagesize):
+                # Note that the offset parameter starts at 0
                 yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
         else:
             raise scrapy.exceptions.CloseSpider("could not parse number of articles from {0}".format(response.url))
