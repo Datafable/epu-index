@@ -34,7 +34,6 @@ class DeredactieSpider(CrawlSpider):
     allowed_domains = ['deredactie.be']
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
-    pagesize = 20
 
     def parse(self, response):
         """
@@ -42,15 +41,26 @@ class DeredactieSpider(CrawlSpider):
         to iterate over all response pages and yield scrapy.Request objects that will be parsed with the
         parse_list_page function
         """
-        nr_of_articles_element = response.xpath('//li[contains(concat(" ", normalize-space(@class), " "), " searchcounter ")]/text()').extract()
+        nr_of_articles_element = response.xpath('//li[contains(concat(" ", normalize-space(@class), " "), " searchcounter ")]')
         if len(nr_of_articles_element) is 2:
             # nr of articles is mentioned above list of articles and below. So the number of elements that match the xpath selector is 2
-            nr_of_articles = int(re.findall('[0-9]+', nr_of_articles_element[0].encode('utf-8'))[0])
-            for i in range(0, nr_of_articles, self.pagesize):
-                # Note that the offset parameter starts at 0
-                yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
+            nr_of_articles_text = ''.join(nr_of_articles_element[0].xpath('descendant-or-self::*/text()').extract())
+            # Explaining the regular expression at line 52:
+            #     (?P<offset>\d+)  => matches a number (\d+) and assigns it to group "offset"
+            #     (?P<pagesize>\d+) => matches a number (\d+) and assigns it to group "pagesize"
+            #     \s+van\s+      => matches the word "van" surrounded by whitespace (spaces, tabs etc)
+            #     (?P<nr_of_articles>\d+)  => matches a number (\d+) and assigns it to group "nr_of_articles"
+            m = re.search('(?P<offset>\d+)-(?P<pagesize>\d+)\s+van\s+(?P<nr_of_articles>\d+)', nr_of_articles_text)
+            if m:
+                pagesize = int(m.group('pagesize')) - int(m.group('offset'))
+                nr_of_articles = int(m.group('nr_of_articles'))
+                for i in range(0, nr_of_articles, pagesize):
+                    # Note that the offset parameter starts at 0
+                    yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
+            else:
+                raise scrapy.exceptions.CloseSpider('Could not parse number of articles from {0}'.format(response.url))
         else:
-            raise scrapy.exceptions.CloseSpider("could not parse number of articles from {0}".format(response.url))
+            raise scrapy.exceptions.CloseSpider('Element containing the number of articles was not found at {0}'.format(response.url))
 
 
     def parse_published_datetime(self, datetime_element_parts):
