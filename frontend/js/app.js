@@ -192,9 +192,9 @@ var app = function() {
     var extentData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
     d3.json(extentData, function(d) {
         var lastDate = new Date(d.rows[0].max),
-            firstDate = new Date(d.rows[0].min);
+            firstDate = new Date(d.rows[0].min),
             lastDateString = moment.utc(lastDate).format("YYYY-MM-DD"),
-            oneYearBeforeLastDateString = moment.utc(lastDate).subtract(1,"years").format("YYYY-MM-DD")
+            oneYearBeforeLastDateString = moment.utc(lastDate).subtract(1,"years").format("YYYY-MM-DD");
 
         datesExtent = [firstDate,lastDate];
         createOverviewChart();
