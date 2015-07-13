@@ -59,9 +59,8 @@ class DeredactieSpider(CrawlSpider):
         datetime_str_parts = [x.encode('utf-8') for x in datetime_element_parts]
         datetime_str = ' '.join(datetime_str_parts).strip()
         datetime_str_stripped = re.findall('[0-9]+/[0-9]+/[0-9]+[^0-9]+[0-9]+:[0-9]+', datetime_str)[0]
-        dt = strptime(datetime_str_stripped, '%d/%m/%Y - %H:%M')
-        datetime_iso_str = strftime('%Y-%m-%d %H:%M', dt)
-        return datetime_iso_str
+        dt = datetime(*strptime(datetime_str_stripped, '%d/%m/%Y - %H:%M')[0:6])
+        return dt.isoformat()
 
 
     def parse_list_page(self, response):
