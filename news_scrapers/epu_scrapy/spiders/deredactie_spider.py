@@ -45,7 +45,7 @@ class DeredactieSpider(CrawlSpider):
         if len(nr_of_articles_element) is 2:
             # nr of articles is mentioned above list of articles and below. So the number of elements that match the xpath selector is 2
             nr_of_articles_text = ''.join(nr_of_articles_element[0].xpath('descendant-or-self::*/text()').extract())
-            # Explaining the regular expression at line 52:
+            # Explaining the regular expression at line 53:
             #     (?P<offset>\d+)  => matches a number (\d+) and assigns it to group "offset"
             #     (?P<pagesize>\d+) => matches a number (\d+) and assigns it to group "pagesize"
             #     \s+van\s+      => matches the word "van" surrounded by whitespace (spaces, tabs etc)
