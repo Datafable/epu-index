@@ -8,7 +8,14 @@ class EpuIndexScore(models.Model):
     epu = models.FloatField()
 
 
+class NewsJournal(models.Model):
+    name = models.CharField(max_length=255)
+    spider_name = models.CharField(max_lenght=255)
+
+
 class Article(models.Model):
+    news_journal = models.ForeignKey(NewsJournal)
+    intro = models.TextField()
     url = models.URLField()
     title = models.CharField(max_length=255)
     text = models.TextField()
