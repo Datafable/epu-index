@@ -54,7 +54,8 @@ class DemorgenSpider(CrawlSpider):
         # search for article published date
         datetime_str_parts = response.xpath('//article/div/footer/descendant::*/time/@datetime').extract()
         if len(datetime_str_parts) > 0:
-            datetime_str = datetime_str_parts[0].encode('utf-8')
+            dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
+            datetime_str = dt.isoformat()
         else:
             datetime_str = ''
 
