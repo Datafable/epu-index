@@ -14,19 +14,22 @@ var app = function() {
 
     var createTickSeries = function(extent, aggregateBy) {
         // Create an array of dates for x-axis ticks, by year or month.
-        // E.g. 2001-01-01, 2002-01-01,... or 2001-01-01, 2001-02-01,...
-        var startDate = moment.utc(extent[0]),
-            endDate = moment.utc(extent[1]),
-            loopingDate = startDate,
+        // E.g. by year: 2012-01-01, 2013-01-01,... or by month: 2012-03-01, 2012-04-01,...
+        // Start of tick series = year or month of firstDate
+        // End of tick series = year or month of one month after lastDate (to have a tick after lastDate)
+
+        var firstDate = moment.utc(extent[0]), // 2012-03-21 stays 2012-03-21
+            lastDate = moment.utc(extent[1]).add(1,'months'), // 2013-03-21 → 2013-04-21.
+            loopingDate = firstDate,
             ticks = [];
 
         if (aggregateBy == "years") {
-            loopingDate = startDate.month(0).date(1); // Set month and day to 1 (1st of January)
+            loopingDate = firstDate.month(0).date(1); // Set month and day to 1 (1st of January): 2012-03-01 → 2012-01-01
         } else if (aggregateBy == "months") {
-            loopingDate = startDate.date(1); // Set day to 1 (1st of month)
+            loopingDate = firstDate.date(1); // Set day to 1 (1st of month): 2012-03-21 → 2012-03-01
         }
             
-        while (loopingDate <= endDate) {
+        while (loopingDate <= lastDate) {
             ticks.push(new Date(loopingDate));
             loopingDate.add(1, aggregateBy);
         }
