@@ -21,12 +21,15 @@ from epu_index import views
 
 router = routers.DefaultRouter()
 router.register(r'epu', views.EpuViewSet)
+#router.register(r'epu-per-month', views.epu_per_month, base_name="toto")
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     url(r'^epu-csv/', views.epu_streaming_csv),
+
+    url(r'^epu-per-month/', views.epu_per_month),
 
     url(r'^admin/', include(admin.site.urls)),
 ]

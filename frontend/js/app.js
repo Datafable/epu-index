@@ -116,7 +116,7 @@ var app = function() {
                     show: false
                 },
                 padding: {
-                    left: 20,
+                    left: 30,
                     right: 20
                 },
                 point: {
@@ -166,7 +166,7 @@ var app = function() {
                 show: false
             },
             padding: {
-                left: 20,
+                left: 30,
                 right: 20
             },
             point: {
