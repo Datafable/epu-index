@@ -6,7 +6,7 @@ from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.exceptions import CloseSpider
 from scrapy import Request
 from epu_scrapy.items import Article
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from time import strptime
 
 
@@ -36,13 +36,6 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
     allowed_domains = ['www.hln.be']
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
-    # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be
-    # executed with the page that the link points to.
-    rules = (
-        Rule(SgmlLinkExtractor(allow=('search.dhtml\?.*page=[0-9]+'), restrict_xpaths=('//*[@id="searchResultBox"]'))),
-        Rule(SgmlLinkExtractor(allow=('\/article\/detail\/'), restrict_xpaths=('//*[@id="searchResultBox"]')),
-             callback='parse_article'),
-    )
     pagesize = 20
 
 
@@ -59,8 +52,9 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
                 yield Request(self.start_urls[0] + '&resultAmountPerPage={0}&page={1}'.format(self.pagesize, i),
                               callback=self.parse_list_page)
         else:
-            raise CloseSpider("could not parse number of articles from {0}".format(response.url))
-
+            if 'leverde geen resultaten op' in response.body:
+                raise CloseSpider('No search results for this query.')
+            raise CloseSpider('Could not parse number of articles from {0}'.format(response.url))
 
     def parse_list_page(self, response):
         """
@@ -88,9 +82,32 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         datetime_str_parts = response.xpath('//article/div/section[@id="detail_content"]/span/text()').extract()
         if len(datetime_str_parts) > 0:
             datetime_full_str = ' '.join(x.encode('utf-8') for x in datetime_str_parts)
-            datetime_str_in = re.findall('[0-9]+/[0-9]+/[0-9]+', datetime_full_str)[0]
-            dt = datetime(*strptime(datetime_str_in, '%d/%m/%y')[:6])
-            datetime_str = dt.strftime('%Y-%m-%d')
+            print datetime_full_str
+            """
+            Explaining the regular expression at line 102:
+                (?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)[^\d]*(?P<hour>\d+)u(?P<minutes>\d+) contains several parts:
+
+                (?<day>\d+)/(?P<month>\d+)/(?P<year>\d+)  => 3 numbers separated by front slashes '/'. Each number is
+                        surrounded by round brackets and the (?P<name>...) construct. This means that for each matching
+                        pattern in the brackets (in each case this is simply '\d+' meaning: a number, possibly
+                        containing multiple digits) a group will be created with the name given in the square brackets.
+                        In this case, three groups are made, one called "day", one "month" and one "year". The matched
+                        string for every group can easily be retrieved later from the returned match object. This is
+                        done at line 106.
+                [^\d]*         => Any number of non-digit characters. This string separates the day from the time.
+                (?P<hour>\d+)u(?P<minutes>\d+)    => Two numbers separated by the character 'u' (hour and minutes).
+                        Again, every matching number is assigned to a group, one for "hour" and one for "minutes".
+            """
+            m = re.search(
+                '(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)[^\d]*(?P<hour>\d+)u(?P<minutes>\d+)',
+                datetime_full_str
+            )
+            if m:
+                datetime_parts = ['20' + m.group('year'), m.group('month'), m.group('day'), m.group('hour'), m.group('minutes')]
+                dt = datetime(*[int(x) for x in datetime_parts])
+                datetime_str = dt.isoformat()
+            else:
+                datetime_str = 'could not parse'
         else:
             datetime_str = ''
 
