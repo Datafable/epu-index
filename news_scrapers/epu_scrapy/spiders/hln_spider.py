@@ -83,21 +83,19 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         if len(datetime_str_parts) > 0:
             datetime_full_str = ' '.join(x.encode('utf-8') for x in datetime_str_parts)
             print datetime_full_str
-            """
-            Explaining the regular expression at line 102:
-                (?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)[^\d]*(?P<hour>\d+)u(?P<minutes>\d+) contains several parts:
-
-                (?<day>\d+)/(?P<month>\d+)/(?P<year>\d+)  => 3 numbers separated by front slashes '/'. Each number is
-                        surrounded by round brackets and the (?P<name>...) construct. This means that for each matching
-                        pattern in the brackets (in each case this is simply '\d+' meaning: a number, possibly
-                        containing multiple digits) a group will be created with the name given in the square brackets.
-                        In this case, three groups are made, one called "day", one "month" and one "year". The matched
-                        string for every group can easily be retrieved later from the returned match object. This is
-                        done at line 106.
-                [^\d]*         => Any number of non-digit characters. This string separates the day from the time.
-                (?P<hour>\d+)u(?P<minutes>\d+)    => Two numbers separated by the character 'u' (hour and minutes).
-                        Again, every matching number is assigned to a group, one for "hour" and one for "minutes".
-            """
+            # Explaining the regular expression at line 100:
+            #     (?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)[^\d]*(?P<hour>\d+)u(?P<minutes>\d+) contains several parts:
+            #
+            #     (?<day>\d+)/(?P<month>\d+)/(?P<year>\d+)  => 3 numbers separated by front slashes '/'. Each number is
+            #             surrounded by round brackets and the (?P<name>...) construct. This means that for each matching
+            #             pattern in the brackets (in each case this is simply '\d+' meaning: a number, possibly
+            #             containing multiple digits) a group will be created with the name given in the square brackets.
+            #             In this case, three groups are made, one called "day", one "month" and one "year". The matched
+            #             string for every group can easily be retrieved later from the returned match object. This is
+            #             done at line 104.
+            #     [^\d]*         => Any number of non-digit characters. This string separates the day from the time.
+            #     (?P<hour>\d+)u(?P<minutes>\d+)    => Two numbers separated by the character 'u' (hour and minutes).
+            #             Again, every matching number is assigned to a group, one for "hour" and one for "minutes".
             m = re.search(
                 '(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+)[^\d]*(?P<hour>\d+)u(?P<minutes>\d+)',
                 datetime_full_str
