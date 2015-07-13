@@ -19,12 +19,11 @@ browse to subsequent pages if the search results are too long. The following art
 * Intro (this is a small introduction paragraph, often accompanying the article)
 * Text
 
-TODO: insert link to W3C Xpath doc
 The name of the journal will be appended to the output too. The outputs returned by Scrapy are called *items* and the
 `Article` item is defined in the [items source file](../items.py). Scrapy (and hence, the spiders implemented here)
 relies heavily on XPath to target elements of interest. XPath is a standard syntax for finding elements in a html
 document tree based on their attribute values (such as id or class) or their hierarchical position in the tree. It is
-well documented at the [W3C website](link to W3C) and many examples are given on Stack Overflow.
+well documented at the [W3C website](http://www.w3schools.com/xpath/) and many examples are given on Stack Overflow.
 
 Due to differing structures of the different news websites, the news scrapers implementations can differ. The four most
 straight forward implementations are the ones for *De Morgen*, *Gazet van Antwerpen*, *Het Belang van Limburg* and *Het
@@ -62,7 +61,25 @@ be parsed with the `parse_article` method. This method will parse all required a
 * spider name: deredactie
 
 This spider is one of the most complex spiders in this directory with several functions needed to scrape the search
-results. The behaviour of this spider is not based on rules, because the complex structure of this site prevented
+results. Because of the underlying complexity of the `deredactie` website, this spiders behaviour is not based solely on
+rules. Instead, the `deredactie` spider overrides the defaults `CrawSpider`'s `parse` method and uses that method to
+determine the total number of articles returned by the search query and the size of the pages. The `parse` method will
+subsequently start a loop to retrieve all search results pages iteratively. This is done at [line
+57](./deredactie_spider.py#L57). The python `range` function will return an array starting from 0 to `nr_of_articles`
+with a step size of `pagesize`. For every step in this element, the `parse` method will yield a Scrapy `Request` object
+that will fetch search results. Since the `offset` parameter increases with the page size, every `Request` object will
+request a different page of the search results.
+
+Every page is parsed with the `parse_list_page` method. In this method, the spider searches to links pointing to
+articles. Unlike other journals, these urls do not always point to single article pages. Some links in the search
+results point to so called `story lines`. These are pages containing several articles related to a shared subject.
+Parsing story line pages directly in unnecessary difficult. It is easier to determine the exact article id, and parse
+the content of that article by using the hidden url `deredactie.be/cm/<article id>`. Fetching the article id is done at
+[line 93](./deredactie_spider.py#L93) and constructing the url is done at [line 94](./deredactie_spider.py#L94).
+
+For every article, a direct url is constructed and a Scrapy `Request` object is yielded. The results of those requests
+are parsed using the `parse_article` method. All article attributes are parsed from the page and an Article item is
+returned.
 
 ## Standaard
 
@@ -108,11 +125,25 @@ search results pages while the second rule matches links to article pages. Artic
 * spider name: hln
 
 Similar to the other spiders, the `hln_spider` will first determine the start url using the `set_start_urls` function.
-Two rules are defined in the spider that check every link in every returned response. The first rule matches links to
-subsequent search results pages while the second rule matches links to article pages. Article pages are processed using
-the `parse_article` function and this function returns an `Article` item.
+However, unlike other news websites, HLN uses *asynchronous requests* to fill its search results page. To illustrate
+this, you can go to HLN's search page and search for any term. You will notice that the resulting page will load quickly
+but the actual search results are added to this page after a couple of seconds: they are loaded asynchronously. This is
+implemented using JavaScript code and since that code will not run when Scrapy fetches the html page, the spider
+cannot crawl this page directly. Instead, the spider uses the urls that are used by HLN to fetch the actual search
+results. [Here is an example](http://www.hln.be/hln/article/searchResult.do?language=nl&searchValue=economie&startSearchDate=09072015&endSearchDate=13072015)
+of such a url and that url is constructed in the spider's `set_start_urls` function.
 
-TODO: Check if you deleted those parse and parse_list methods
+The spider will automatically send a request to the start url and parse the response using it's `parse` method. This is
+default behaviour of a Scrapy `CrawlSpider`. However, the `hln_spider` has a custom `parse` method that overrides the
+`CrawlSpiders` default `parse` method. In the custom `parse` method, the number of resulting articles is parsed from the
+first search results page. Based on that number, a loop is started that will send requests for every subsequent search
+results page. This loop starts at 0 and hence retrieves the first results again, which seems like a waste. Only this
+time, the page size is set using the `resultAmountPerPage` parameter making sure that no article is missed.
+
+Every search results page is parsed using the `parse_list_page` method. This method searches for links pointing to
+articles and yields Scrapy `Request` objects that will fetch the responses of those urls. Those responses - the actual
+detailed article pages - are parsed using the `parse_article` method. In here, a number of xpath statements are defined
+to parse specific article attributes and wrap these in an Article item that is returned by the spider.
 
 ## Het Nieuwsblad
 
