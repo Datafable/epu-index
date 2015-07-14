@@ -123,6 +123,8 @@ class DeTijdSpider(Spider):
             '''
         ).extract()
         if len(title_parts) > 0:
+            # the character that is replaced is a soft newline. It is used to mark places in words where you can cut them
+            # should you need to wrap the text to the next line. All text is full of these characters so we strip them.
             title = title_parts[0].strip().encode('utf-8').replace('\xc2\xad', '')
         else:
             title = ''
