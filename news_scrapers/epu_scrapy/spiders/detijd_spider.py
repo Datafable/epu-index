@@ -108,7 +108,6 @@ class DeTijdSpider(Spider):
         # issue: in summer (when the local time is UTC+02) articles published before 02:00:00 in the morning are
         # returned when you query the previous day, but they are not included when you query the current day. So if we
         # would strip these articles - like we do for De Standaard - then we lose them.
-        # TODO: find a better place to document this
         for article_url in article_urls:
             yield Request(article_url, callback=self.parse_article)
 
