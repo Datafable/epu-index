@@ -86,11 +86,63 @@ returned.
 * spider: [`destandaard_spider.py`](./destandaard_spider.py)
 * spider name: standaard
 
-TODO: Document De Standaard spider
+De Standaard and De Tijd require a subscription to crawl all articles. Scrapy has built-in support for this. The start
+url is set in the `DeStandaardSpider` class and points to the log in form. The default `parse` method from a Scrapy
+spider is overwritten and a custom `parse` method that will return a `FormRequest` object. With that object, the spider
+can fill in the user credentials (from the [crawling settings file](../crawling_settings.json)) in the log in form and
+process the response returned after submitting the form with the callback function (in this case `go_to_search_site`.
+The function `go_to_search_site` will check whether the log in was successful. If so, it will construct a url that
+points to a search results page. If not, the spider will stop.
+
+The results of the search are processed with the `parse_search_results` method and this method does two things. First,
+it searches for links to subsequent search results pages and if such an element is found in the html, a new Scrapy
+`Request` object is yielded of which the response will be processed with the `parse_search_results` method again. This
+is actually an iterative loop. Second, it searches for links to actual articles. However, the Standaard has two types of
+articles: those that require subscription (`DS+` articles) and those that don't. Since the structure of `DS+` article
+pages is considerably different from regular article pages, the spider needs to process those responses using different
+methods. Luckily, it is possible to determine the type of the article up front. The elements on the search results page
+that point to the actual articles have a different class, causing the subtitles of these elements to have a different
+color. The xpath expressions that should match these elements therefor differ slightly (see [line
+115](./destandaard_spider.py#L115) vs [line 122](./destandaard_spider.py#L122)).
+
+Another important thing to note is at [line 127](./destandaard_spider.py#L127) and [line
+132](./destandaard_spider.py#L132). The spider checks whether the published date of the article is indeed corresponding
+to the range given in the [crawling settings file](../crawling_settings.json). This is needed because De Standaard
+returns articles outside of the given date range if it thinks the article is related. If the article is indeed in the
+given date range, a new Scrapy `Request` object is yielded. The response of those requests are processed using the
+`parse_live_article` (for regular articles) or the `parse_archive_article` (for `DS+` articles) method. Except for the
+fact that the `standaard` spider has two of these methods, the structure of these methods is very similar to what we
+discussed in previous spiders. The required article attributes are parsed from the page and an Article item is returned.
 
 ## De Tijd
 
-TODO: Document De Tijd spider
+Similar to De Standaard, De Tijd requires a submission to search their archive. Therefore, the set up of this spider is
+similar to the `standaard` spider. The spider is directed to the log in form and returns a `FormRequest` object that
+will handle the form submission. After a successful log in, the spider constructs a url pointing to a search page using
+the settings in the [crawling settings file](../crawling_settings.json). This is again done in a method called
+`go_to_search_site`.
+
+The search results are processed using the `parse_search_results` method and similar to the `parse_search_results`
+method of the `standaard` spider, this method will look for links to subsequent pages, or links to articles. Subsequent
+search results pages are again processed with this `parse_search_results` method, while articles will be processed with
+the `parse_article` method. De Tijd will not return additional articles outside of the given date range as De Standaard
+does. However, there is a different issue with the search results of De Tijd. It looks like De Tijd stores and queries
+its articles in UTC time zone. This means that articles that are published in winter before 01u00 or in summer before
+02u00 will not be returned when you search for articles published that day. Instead, you might find articles in the
+search results that are published the next day before 01u00 (or 02u00). We cannot exclude these articles from the search
+results the way we did that with de `standaard` spider because in this case we would lose the article.
+
+All article pages are parsed with the `parse_article` method that is very similar to other spiders. There are however
+two important differences:
+
+1. Parsing of the date is a bit verbose because De Tijd shows the date with a month in dutch, not as a number. Therefor
+the spider needs to convert this month to a number, using the `self.months` instance variable defined at [line
+37](./detijd_spider.py#L37). Converting the month to a number happens at [line 146](./detijd_spider.py#L37).
+2. De Tijd uses soft newline characters. These characters are used by the browser to split the word using a dash and
+continue at the next line in case the word hits the edge of the screen (or the border of the maximum allowed width). For
+instance the word "university" can be split as "uni-versity", "univer-sity" or "universi-ty" and thus has 3 soft
+newlines in it. Every text, intro or title of an article contains numerous soft newlines and the spider removes these
+before returning an Article item. The soft newlines are indicated in the code as `\xc2\xad`.
 
 ## Gazet van Antwerpen
 
