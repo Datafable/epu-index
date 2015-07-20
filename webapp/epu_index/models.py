@@ -23,6 +23,7 @@ class Article(models.Model):
     title = models.CharField(max_length=255)
     text = models.TextField()
     published_at = models.DateTimeField()
+    epu_score = models.DecimalField(max_digits=9, decimal_places=5, blank=True, null=True)
 
     def __unicode__(self):
         return self.title
