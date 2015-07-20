@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
-
+from scrapy.contrib.djangoitem import DjangoItem
 import scrapy
+from epu_index.models import Article
 
-
-class Article(scrapy.Item):
-    journal = scrapy.Field()
-    intro = scrapy.Field()
-    text = scrapy.Field()
-    title = scrapy.Field()
-    datetime = scrapy.Field()
-    url = scrapy.Field()
+class Article(DjangoItem):
+    django_model = Article

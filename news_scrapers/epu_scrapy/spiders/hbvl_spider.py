@@ -72,7 +72,7 @@ class HetBelangVanLimburgSpider(CrawlSpider):
         article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_str
+        article['published_at'] = datetime_str
         article['text'] = article_full_text
-        article['journal'] = self.name
+        article['news_journal'] = self.name
         return article
