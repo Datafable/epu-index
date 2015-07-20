@@ -59,7 +59,7 @@ def migrate_articles(incsv, journals):
                     published_at, journal, title, text = row
                     url = 'not provided'
                     dt = datetime.datetime(*time.strptime(published_at, ' %b %d %H %M %S %Y')[0:6])
-                    dt_str = dt.isoformat()
+                    dt_str = dt.isoformat() + '+00' # assume all datetimes are in UTC
                     spider = translate_journal(journal)
                     journal_id = journals[spider]
                     curs.execute('insert into epu_index_article (url, published_at, news_journal_id, text, title) values (%s, %s, %s, %s, %s)',
