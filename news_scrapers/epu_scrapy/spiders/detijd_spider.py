@@ -183,5 +183,4 @@ class DeTijdSpider(Spider):
         article['title'] = title
         article['published_at'] = datetime_iso_str
         article['text'] = article_text
-        article['news_journal'] = self.name
         return article

@@ -144,5 +144,4 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         article['title'] = title
         article['published_at'] = datetime_str
         article['text'] = article_full_text
-        article['news_journal'] = self.name
         return article

@@ -42,7 +42,7 @@ The website of *De Morgen* does not allow to search for articles published the d
 `from` and `to` parameter in the search, but when both these dates are set to the date for yesterday, no results are
 returned (the `to` parameter is exclusive and hence prevents any article to match the query). Therefore, in contrast to
 the other spiders, the spider will include the articles of the current day. This means that some articles will be
-scraped two times, but these duplicates are prevented from entering the database.
+scraped two times, but these duplicates are prevented from entering the database. TODO: Implement this test
 
 The *De Morgen* spider uses [Scrapy Rules](http://doc.scrapy.org/en/latest/topics/spiders.html?highlight=rule#crawling-rules)
  to crawl the search results. The first rule will follow

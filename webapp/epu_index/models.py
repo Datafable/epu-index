@@ -10,12 +10,15 @@ class EpuIndexScore(models.Model):
 
 class NewsJournal(models.Model):
     name = models.CharField(max_length=255)
-    spider_name = models.CharField(max_lenght=255)
+    spider_name = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Article(models.Model):
     news_journal = models.ForeignKey(NewsJournal)
-    intro = models.TextField()
+    intro = models.TextField(blank=True, null=True)
     url = models.URLField()
     title = models.CharField(max_length=255)
     text = models.TextField()

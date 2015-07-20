@@ -193,7 +193,6 @@ class DeStandaardSpider(Spider):
         article['title'] = title
         article['published_at'] = datetime_str
         article['text'] = article_text
-        article['news_journal'] = self.name
         return article
 
 
@@ -255,5 +254,4 @@ class DeStandaardSpider(Spider):
         article['title'] = title
         article['published_at'] = datetime_str
         article['text'] = article_text
-        article['news_journal'] = self.name
         return article
