@@ -61,7 +61,7 @@ be parsed with the `parse_article` method. This method will parse all required a
 * spider name: deredactie
 
 This spider is one of the most complex spiders in this directory with several functions needed to scrape the search
-results. Because of the underlying complexity of the `deredactie` website, this spiders behaviour is not based solely on
+results. Because of the underlying complexity of the *De Redactie* website, this spiders behaviour is not based solely on
 rules. Instead, the `deredactie` spider overrides the defaults `CrawSpider`'s `parse` method and uses that method to
 determine the total number of articles returned by the search query and the size of the pages. The `parse` method will
 subsequently start a loop to retrieve all search results pages iteratively. This is done at [line
@@ -72,13 +72,13 @@ request a different page of the search results.
 
 Every page is parsed with the `parse_list_page` method. In this method, the spider searches to links pointing to
 articles. Unlike other journals, these urls do not always point to single article pages. Some links in the search
-results point to so called `story lines`. These are pages containing several articles related to a shared subject.
+results point to so called *story lines*. These are pages containing several articles related to a shared subject.
 Parsing story line pages directly in unnecessary difficult. It is easier to determine the exact article id, and parse
 the content of that article by using the hidden url `deredactie.be/cm/<article id>`. Fetching the article id is done at
 [line 93](./deredactie_spider.py#L93) and constructing the url is done at [line 94](./deredactie_spider.py#L94).
 
 For every article, a direct url is constructed and a Scrapy `Request` object is yielded. The results of those requests
-are parsed using the `parse_article` method. All article attributes are parsed from the page and an Article item is
+are parsed using the `parse_article` method. All article attributes are parsed from the page and an `Article` item is
 returned.
 
 ## Standaard
@@ -86,18 +86,19 @@ returned.
 * spider: [`destandaard_spider.py`](./destandaard_spider.py)
 * spider name: standaard
 
-De Standaard and De Tijd require a subscription to crawl all articles. Scrapy has built-in support for this. The start
-url is set in the `DeStandaardSpider` class and points to the log in form. The default `parse` method from a Scrapy
-spider is overwritten and a custom `parse` method that will return a `FormRequest` object. With that object, the spider
-can fill in the user credentials (from the [crawling settings file](../crawling_settings.json)) in the log in form and
-process the response returned after submitting the form with the callback function (in this case `go_to_search_site`.
-The function `go_to_search_site` will check whether the log in was successful. If so, it will construct a url that
-points to a search results page. If not, the spider will stop.
+*De Standaard* and *De Tijd* require a subscription to crawl all articles. Scrapy has built-in support for this. The start
+url is set in the `DeStandaardSpider` class and points to the log in form (this is done at [line
+33](./destandaard_spider.py#L33)). The default `parse` method from a Scrapy spider is overwritten and a custom `parse`
+method that will return a `FormRequest` object. With that object, the spider can fill in the user credentials (from the
+[crawling settings file](../crawling_settings.json)) in the log in form and process the response returned after submitting
+the form with the callback function (in this case `go_to_search_site`). The function `go_to_search_site` will check
+whether the log in was successful. If so, it will construct a url that points to a search results page. If not, the spider
+will stop.
 
-The results of the search are processed with the `parse_search_results` method and this method does two things. First,
+The results of the search are processed with the `parse_search_results` method. This method does two things. First
 it searches for links to subsequent search results pages and if such an element is found in the html, a new Scrapy
 `Request` object is yielded of which the response will be processed with the `parse_search_results` method again. This
-is actually an iterative loop. Second, it searches for links to actual articles. However, the Standaard has two types of
+is actually an iterative loop. Second, it searches for links to actual articles. However, *De Standaard* has two types of
 articles: those that require subscription (`DS+` articles) and those that don't. Since the structure of `DS+` article
 pages is considerably different from regular article pages, the spider needs to process those responses using different
 methods. Luckily, it is possible to determine the type of the article up front. The elements on the search results page
@@ -112,11 +113,11 @@ returns articles outside of the given date range if it thinks the article is rel
 given date range, a new Scrapy `Request` object is yielded. The response of those requests are processed using the
 `parse_live_article` (for regular articles) or the `parse_archive_article` (for `DS+` articles) method. Except for the
 fact that the `standaard` spider has two of these methods, the structure of these methods is very similar to what we
-discussed in previous spiders. The required article attributes are parsed from the page and an Article item is returned.
+discussed in previous spiders. The required article attributes are parsed from the page and an `Article` item is returned.
 
 ## De Tijd
 
-Similar to De Standaard, De Tijd requires a submission to search their archive. Therefore, the set up of this spider is
+Similar to *De Standaard*, *De Tijd* requires a submission to search their archive. Therefore, the set up of this spider is
 similar to the `standaard` spider. The spider is directed to the log in form and returns a `FormRequest` object that
 will handle the form submission. After a successful log in, the spider constructs a url pointing to a search page using
 the settings in the [crawling settings file](../crawling_settings.json). This is again done in a method called
@@ -142,7 +143,7 @@ the spider needs to convert this month to a number, using the `self.months` inst
 continue at the next line in case the word hits the edge of the screen (or the border of the maximum allowed width). For
 instance the word "university" can be split as "uni-versity", "univer-sity" or "universi-ty" and thus has 3 soft
 newlines in it. Every text, intro or title of an article contains numerous soft newlines and the spider removes these
-before returning an Article item. The soft newlines are indicated in the code as `\xc2\xad`.
+before returning an `Article` item. The soft newlines are indicated in the code as `\xc2\xad`.
 
 ## Gazet van Antwerpen
 
@@ -195,7 +196,7 @@ time, the page size is set using the `resultAmountPerPage` parameter making sure
 Every search results page is parsed using the `parse_list_page` method. This method searches for links pointing to
 articles and yields Scrapy `Request` objects that will fetch the responses of those urls. Those responses - the actual
 detailed article pages - are parsed using the `parse_article` method. In here, a number of xpath statements are defined
-to parse specific article attributes and wrap these in an Article item that is returned by the spider.
+to parse specific article attributes and wrap these in an `Article` item that is returned by the spider.
 
 ## Het Nieuwsblad
 
