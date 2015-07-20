@@ -14,7 +14,7 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] is not 'yesterday':
+        if settings['period'] != 'yesterday':
             CloseSpider("unknown period setting. See the scrapers README for more information.")
         yesterday = today - timedelta(days=1)
         yesterday_str = '{0}-{1}-{2}'.format(yesterday.day, yesterday.month, yesterday.year)

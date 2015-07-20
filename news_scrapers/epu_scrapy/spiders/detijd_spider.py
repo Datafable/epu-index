@@ -39,7 +39,7 @@ class DeTijdSpider(Spider):
     def parse(self, response):
         """
         Overwrites Spiders parse method. Fill in log in details in log in form and submit.
-        :return:
+        :return: FormRequest
         """
         return FormRequest.from_response(
             response,

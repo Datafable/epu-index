@@ -15,7 +15,7 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] is not 'yesterday':
+        if settings['period'] != 'yesterday':
             CloseSpider("unknown period setting. See the scrapers README for more information.")
         search_day = today - timedelta(days=1) # search for articles of yesterday
         search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
@@ -84,7 +84,7 @@ class DeredactieSpider(CrawlSpider):
         links = response.xpath('//div[contains(concat(" ", normalize-space(@class), " "), " searchresults ")]/descendant::a/@href').extract()
         link_set = set([x.encode('utf-8') for x in links])
         for l in link_set:
-            if l is not '#':
+            if l != '#':
                 # an article link can point to a single article page, or a storyline page, which includes several articles.
                 # in both cases, the id of the actual article that is pointed to can be found in the url. In the case
                 # of a storyline, the url is like /cm/vrtnieuws/buitenland/<storylineid>?eid=<articleid> while for a
