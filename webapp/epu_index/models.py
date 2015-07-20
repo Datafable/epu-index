@@ -7,6 +7,9 @@ class EpuIndexScore(models.Model):
     number_of_papers = models.IntegerField()
     epu = models.FloatField()
 
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.date, self.epu)
+
 
 class NewsJournal(models.Model):
     name = models.CharField(max_length=255)
