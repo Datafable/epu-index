@@ -34,7 +34,7 @@ var app = function() {
             loopingDate.add(1, aggregateBy);
         }
         return ticks;
-    }
+    };
 
     /*
     Chart interaction functions
