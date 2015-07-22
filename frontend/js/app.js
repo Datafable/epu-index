@@ -1,8 +1,6 @@
 var app = (function() {
-
     "use strict";
 
-    // Main variables
     var overviewChart,
         detailedChart,
         datesExtent;
@@ -11,20 +9,22 @@ var app = (function() {
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
 
     var createTickSeries = function(extent, aggregateBy) {
-        // Create an array of dates for x-axis ticks, by year or month.
+        // Create an array of dates for x-axis ticks, by year or month
         // E.g. by year: 2012-01-01, 2013-01-01,... or by month: 2012-03-01, 2012-04-01,...
         // Start of tick series = year or month of firstDate
         // End of tick series = year or month of one month after lastDate (to have a tick after lastDate)
 
         var firstDate = moment.utc(extent[0]), // 2012-03-21 stays 2012-03-21
-            lastDate = moment.utc(extent[1]).add(1,'months'), // 2013-03-21 → 2013-04-21.
+            lastDate = moment.utc(extent[1]).add(1,"months"), // 2013-03-21 → 2013-04-21
             loopingDate = firstDate,
             ticks = [];
 
         if (aggregateBy === "years") {
-            loopingDate = firstDate.month(0).date(1); // Set month and day to 1 (1st of January): 2012-03-01 → 2012-01-01
+            // Set month and day to 1 (1st of January): 2012-03-01 → 2012-01-01
+            loopingDate = firstDate.month(0).date(1);
         } else if (aggregateBy === "months") {
-            loopingDate = firstDate.date(1); // Set day to 1 (1st of month): 2012-03-21 → 2012-03-01
+            // Set day to 1 (1st of month): 2012-03-21 → 2012-03-01
+            loopingDate = firstDate.date(1);
         }
 
         while (loopingDate <= lastDate) {
@@ -36,12 +36,13 @@ var app = (function() {
 
     // Chart interaction functions
     var loadYear = function(selectedDate) {
-        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after.
+        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
             endDate = moment.utc(selectedDate).add(6,"months");
 
         // Indicate the selected dates on the overview chart
-        overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
+        // regions() would be more appropriate but is buggy and slow
+        overviewChart.xgrids([
             {value: startDate},
             {value: endDate}
         ]);
@@ -52,7 +53,7 @@ var app = (function() {
 
     // Chart data load functions
     var populateDetailedChart = function(startDateString,endDateString) {
-        // Retrieve epu data per day and populate chart.
+        // Retrieve epu data per day and populate chart
         var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
         d3.json(epuDataPerDay, function(d) {
             var datesPerDay = d.map(function(e) { return new Date(e.date); }),
@@ -196,12 +197,11 @@ var app = (function() {
         createDetailedChart();
     });
     
-}());
+})();
 
 
 
 /*
-
 var words = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
     var fill = d3.scale.category20(); // TODO: create custom color schema
     var scalingFactor = 7; // TODO: should be determined based on input counts
