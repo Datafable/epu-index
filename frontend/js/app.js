@@ -1,15 +1,13 @@
-var app = function() {
+var app = (function() {
 
-    /*
-    Main variables
-    */    
+    "use strict";
+
+    // Main variables
     var overviewChart,
         detailedChart,
         datesExtent;
-    
-    /*
-    Chart layout functions
-    */
+
+    // Chart layout functions
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
 
     var createTickSeries = function(extent, aggregateBy) {
@@ -23,12 +21,12 @@ var app = function() {
             loopingDate = firstDate,
             ticks = [];
 
-        if (aggregateBy == "years") {
+        if (aggregateBy === "years") {
             loopingDate = firstDate.month(0).date(1); // Set month and day to 1 (1st of January): 2012-03-01 → 2012-01-01
-        } else if (aggregateBy == "months") {
+        } else if (aggregateBy === "months") {
             loopingDate = firstDate.date(1); // Set day to 1 (1st of month): 2012-03-21 → 2012-03-01
         }
-            
+
         while (loopingDate <= lastDate) {
             ticks.push(new Date(loopingDate));
             loopingDate.add(1, aggregateBy);
@@ -36,9 +34,7 @@ var app = function() {
         return ticks;
     };
 
-    /*
-    Chart interaction functions
-    */
+    // Chart interaction functions
     var loadYear = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after.
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
@@ -46,17 +42,15 @@ var app = function() {
 
         // Indicate the selected dates on the overview chart
         overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
-            { value: startDate },
-            { value: endDate }
+            {value: startDate},
+            {value: endDate}
         ]);
 
         // Reload detailed chart
         populateDetailedChart(startDate.format("YYYY-MM-DD"),endDate.format("YYYY-MM-DD"));
     };
 
-    /*
-    Chart data load functions
-    */
+    // Chart data load functions
     var populateDetailedChart = function(startDateString,endDateString) {
         // Retrieve epu data per day and populate chart.
         var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
@@ -73,9 +67,7 @@ var app = function() {
         });
     };
 
-    /*
-    Chart creation functions
-    */
+    // Chart creation functions
     var createOverviewChart = function(lastDateMinusSixMonths) {
         // Create an overview chart WITH data, then loadYear()
         var epuDataPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
@@ -192,9 +184,7 @@ var app = function() {
         });
     };
 
-    /*
-    Get date range and create charts
-    */
+    // Get date range and create charts
     var extentData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
     d3.json(extentData, function(d) {
         var firstDate = new Date(d.rows[0].min),
@@ -206,7 +196,7 @@ var app = function() {
         createDetailedChart();
     });
     
-}();
+}());
 
 
 
