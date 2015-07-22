@@ -1,6 +1,7 @@
 {
+    "model_file": "some_file",
+    "password": "your_password",
     "period": "yesterday",
     "term": "economie",
-    "username": "your_username",
-    "password": "your_password"
+    "username": "your_username"
 }
