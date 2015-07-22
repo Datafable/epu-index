@@ -71,7 +71,7 @@ def _filterdates_epu_queryset(start_date, end_date):
             """ Takes a YYYY-MM-DD string and return a Date object."""
             return datetime.strptime(string, '%Y-%m-%d').date()
 
-    queryset = EpuIndexScore.objects.all()
+    queryset = EpuIndexScore.objects.all().order_by('date')
 
     # Optional filtering by start/end date.
     # Params are named 'start' and 'end' and use YYYY-MM-DD format.
@@ -112,8 +112,7 @@ def epu_per_month(request):
 
 
 class EpuViewSet(viewsets.ReadOnlyModelViewSet):
-    base_name = 'epu'
-    queryset = EpuIndexScore.objects.all()
+    queryset = EpuIndexScore.objects.all()  # TODO: shouldn't this be removed since we provide get_queryset?
     serializer_class = EpuSerializer
 
     def get_queryset(self):
