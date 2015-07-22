@@ -15,7 +15,7 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] is not 'yesterday':
+        if settings['period'] != 'yesterday':
             CloseSpider("unknown period setting. See the scrapers README for more information.")
         search_day = today - timedelta(days=1) # search for articles of yesterday
         search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year)
@@ -51,7 +51,8 @@ class NieuwsbladSpider(CrawlSpider):
         # search for article published date
         datetime_str_parts = response.xpath('//article/div[2]/div/div/footer/p/time/@datetime').extract()
         if len(datetime_str_parts) > 0:
-            datetime_str = datetime_str_parts[0].encode('utf-8')
+            dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d %H:%M')[0:6])
+            datetime_str = dt.isoformat()
         else:
             datetime_str = ''
 
@@ -71,7 +72,6 @@ class NieuwsbladSpider(CrawlSpider):
         article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_str
+        article['published_at'] = datetime_str
         article['text'] = article_full_text
-        article['journal'] = self.name
         return article

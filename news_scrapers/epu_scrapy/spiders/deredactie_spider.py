@@ -15,7 +15,7 @@ def set_start_urls(settings):
     term = settings['term']
     if type(settings['period']) is not dict:
         today = datetime.today()
-        if settings['period'] is not 'yesterday':
+        if settings['period'] != 'yesterday':
             CloseSpider("unknown period setting. See the scrapers README for more information.")
         search_day = today - timedelta(days=1) # search for articles of yesterday
         search_day_str = '{0}/{1}/{2}'.format(search_day.day, search_day.month, search_day.year % 100)
@@ -34,7 +34,6 @@ class DeredactieSpider(CrawlSpider):
     allowed_domains = ['deredactie.be']
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
-    pagesize = 20
 
     def parse(self, response):
         """
@@ -42,14 +41,26 @@ class DeredactieSpider(CrawlSpider):
         to iterate over all response pages and yield scrapy.Request objects that will be parsed with the
         parse_list_page function
         """
-        nr_of_articles_element = response.xpath('//li[contains(concat(" ", normalize-space(@class), " "), " searchcounter ")]/text()').extract()
+        nr_of_articles_element = response.xpath('//li[contains(concat(" ", normalize-space(@class), " "), " searchcounter ")]')
         if len(nr_of_articles_element) is 2:
             # nr of articles is mentioned above list of articles and below. So the number of elements that match the xpath selector is 2
-            nr_of_articles = int(re.findall('[0-9]+', nr_of_articles_element[0].encode('utf-8'))[0])
-            for i in range(0, nr_of_articles, self.pagesize):
-                yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
+            nr_of_articles_text = ''.join(nr_of_articles_element[0].xpath('descendant-or-self::*/text()').extract())
+            # Explaining the regular expression at line 53:
+            #     (?P<offset>\d+)  => matches a number (\d+) and assigns it to group "offset"
+            #     (?P<pagesize>\d+) => matches a number (\d+) and assigns it to group "pagesize"
+            #     \s+van\s+      => matches the word "van" surrounded by whitespace (spaces, tabs etc)
+            #     (?P<nr_of_articles>\d+)  => matches a number (\d+) and assigns it to group "nr_of_articles"
+            m = re.search('(?P<offset>\d+)-(?P<pagesize>\d+)\s+van\s+(?P<nr_of_articles>\d+)', nr_of_articles_text)
+            if m:
+                pagesize = int(m.group('pagesize')) - int(m.group('offset'))
+                nr_of_articles = int(m.group('nr_of_articles'))
+                for i in range(0, nr_of_articles, pagesize):
+                    # Note that the offset parameter starts at 0
+                    yield scrapy.Request(self.start_urls[0] + '&offset={0}'.format(i), callback=self.parse_list_page)
+            else:
+                raise scrapy.exceptions.CloseSpider('Could not parse number of articles from {0}'.format(response.url))
         else:
-            raise scrapy.exceptions.CloseSpider("could not parse number of articles from {0}".format(response.url))
+            raise scrapy.exceptions.CloseSpider('Element containing the number of articles was not found at {0}'.format(response.url))
 
 
     def parse_published_datetime(self, datetime_element_parts):
@@ -59,9 +70,8 @@ class DeredactieSpider(CrawlSpider):
         datetime_str_parts = [x.encode('utf-8') for x in datetime_element_parts]
         datetime_str = ' '.join(datetime_str_parts).strip()
         datetime_str_stripped = re.findall('[0-9]+/[0-9]+/[0-9]+[^0-9]+[0-9]+:[0-9]+', datetime_str)[0]
-        dt = strptime(datetime_str_stripped, '%d/%m/%Y - %H:%M')
-        datetime_iso_str = strftime('%Y-%m-%d %H:%M', dt)
-        return datetime_iso_str
+        dt = datetime(*strptime(datetime_str_stripped, '%d/%m/%Y - %H:%M')[0:6])
+        return dt.isoformat()
 
 
     def parse_list_page(self, response):
@@ -74,13 +84,13 @@ class DeredactieSpider(CrawlSpider):
         links = response.xpath('//div[contains(concat(" ", normalize-space(@class), " "), " searchresults ")]/descendant::a/@href').extract()
         link_set = set([x.encode('utf-8') for x in links])
         for l in link_set:
-            if l is not '#':
+            if l != '#':
                 # an article link can point to a single article page, or a storyline page, which includes several articles.
                 # in both cases, the id of the actual article that is pointed to can be found in the url. In the case
                 # of a storyline, the url is like /cm/vrtnieuws/buitenland/<storylineid>?eid=<articleid> while for a
                 # single article page, the url is /cm/vrtnieuws/binnenland/<articleid>. Both a storylineid and a articleid
                 # look something like 1.193019, which will be matched by the regular expression pattern [0-9.]+
-                article_id = re.findall('[0-9.]+', l)[-1] # the last id in the url is the article id
+                article_id = re.findall('[0-9.]+', l)[-1] # the last string that matches this pattern in the url is the article id
                 l = 'http://deredactie.be/cm/' + article_id
                 yield scrapy.Request(l, callback=self.parse_article)
 
@@ -124,7 +134,6 @@ class DeredactieSpider(CrawlSpider):
         article['url'] = url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_iso_str
+        article['published_at'] = datetime_iso_str
         article['text'] = article_full_text
-        article['journal'] = self.name
         return article

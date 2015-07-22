@@ -39,7 +39,7 @@ class DeTijdSpider(Spider):
     def parse(self, response):
         """
         Overwrites Spiders parse method. Fill in log in details in log in form and submit.
-        :return:
+        :return: FormRequest
         """
         return FormRequest.from_response(
             response,
@@ -108,7 +108,6 @@ class DeTijdSpider(Spider):
         # issue: in summer (when the local time is UTC+02) articles published before 02:00:00 in the morning are
         # returned when you query the previous day, but they are not included when you query the current day. So if we
         # would strip these articles - like we do for De Standaard - then we lose them.
-        # TODO: find a better place to document this
         for article_url in article_urls:
             yield Request(article_url, callback=self.parse_article)
 
@@ -123,6 +122,8 @@ class DeTijdSpider(Spider):
             '''
         ).extract()
         if len(title_parts) > 0:
+            # the character that is replaced is a soft newline. It is used to mark places in words where you can cut them
+            # should you need to wrap the text to the next line. All text is full of these characters so we strip them.
             title = title_parts[0].strip().encode('utf-8').replace('\xc2\xad', '')
         else:
             title = ''
@@ -180,7 +181,6 @@ class DeTijdSpider(Spider):
         article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_iso_str
+        article['published_at'] = datetime_iso_str
         article['text'] = article_text
-        article['journal'] = self.name
         return article

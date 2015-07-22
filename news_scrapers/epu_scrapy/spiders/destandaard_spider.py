@@ -191,9 +191,8 @@ class DeStandaardSpider(Spider):
         article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_str
+        article['published_at'] = datetime_str
         article['text'] = article_text
-        article['journal'] = self.name
         return article
 
 
@@ -253,7 +252,6 @@ class DeStandaardSpider(Spider):
         article['url'] = response.url
         article['intro'] = article_intro
         article['title'] = title
-        article['datetime'] = datetime_str
+        article['published_at'] = datetime_str
         article['text'] = article_text
-        article['journal'] = self.name
         return article
