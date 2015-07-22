@@ -88,8 +88,8 @@ def _filterdates_epu_queryset(start_date, end_date):
 @api_view()
 @permission_classes((AllowAny, ))
 def epu_per_month(request):
-    start_date = request.GET.get('start', None)
-    end_date = request.GET.get('end', None)
+    start_date = request.GET.get('start_date', None)
+    end_date = request.GET.get('end_date', None)
 
     queryset = _filterdates_epu_queryset(start_date, end_date)
 
@@ -117,7 +117,7 @@ class EpuViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EpuSerializer
 
     def get_queryset(self):
-        start_date = self.request.query_params.get('start', None)
-        end_date = self.request.query_params.get('end', None)
+        start_date = self.request.query_params.get('start_date', None)
+        end_date = self.request.query_params.get('end_date', None)
 
         return _filterdates_epu_queryset(start_date, end_date)
