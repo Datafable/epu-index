@@ -43,8 +43,10 @@ After scraping, the articles are written to a database. The Scrapy way to do thi
 Pipelines are defined in [`pipelines.py`](../pipelines.py) and generally they implement behaviour that is executed when
 a spiders yields an item. The database we will be writing to is the database of the epu index web application, which is
 built using the Django framework. As mentioned before, the items returned by the spiders are closely coupled to the
-Django models defined in the web application and hence, a simple [`item.save()`](../pipelines.py#L11) suffices to
+Django models defined in the web application and hence, a simple [`item.save()`](../pipelines.py#L17) suffices to
 persist the item in the database of the web application.
+
+TODO: document how the article gets scored
 
 ## De Morgen
 
