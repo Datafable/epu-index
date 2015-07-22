@@ -10,6 +10,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.settings import api_settings
+
+from rest_framework_csv import renderers as r
 
 from .models import EpuIndexScore
 from .serializers import EpuSerializer
@@ -114,6 +117,8 @@ def epu_per_month(request):
 class EpuViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = EpuIndexScore.objects.all()  # TODO: shouldn't this be removed since we provide get_queryset?
     serializer_class = EpuSerializer
+
+    renderer_classes = [r.CSVRenderer] + api_settings.DEFAULT_RENDERER_CLASSES
 
     def get_queryset(self):
         start_date = self.request.query_params.get('start_date', None)
