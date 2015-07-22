@@ -20,8 +20,16 @@ browse to subsequent pages if the search results are too long. The following art
 * Text
 
 The name of the journal will be appended to the output too. The outputs returned by Scrapy are called *items* and the
-`Article` item is defined in the [items source file](../items.py). Scrapy (and hence, the spiders implemented here)
-relies heavily on XPath to target elements of interest. XPath is a standard syntax for finding elements in a html
+`Article` item is defined in the [items source file](../items.py). Usually, items contain fields and these fields can be
+filled with actual values during scraping ([as the `demorgen` spider does here for instance](demorgen_spider.py#L76)).
+However, in this case, the items that our spiders return closely resemble models that are defined by our [Django web
+application](../../../webapp). Therefore, the Article item defined in our `items.py` is a subclass of the
+[`DjangoItem`](../items.py#L5) and is [linked](../items.py#L6) to the `Article` model defined in the [Django
+models](../../../webapp/epu_index/models.py#L22). Scrapy is able to find the Django models because we added the webapp
+directory to the python path in the [Scrapy settings file](../settings.py#L8). Based on the `Article` model defined in
+the Django models file, Scrapy will creat a `Article` item that has the exact same attributes as the `Article` model.
+
+Scrapy (and hence, the spiders implemented here) relies heavily on XPath to target elements of interest. XPath is a standard syntax for finding elements in a html
 document tree based on their attribute values (such as id or class) or their hierarchical position in the tree. It is
 well documented at the [W3C website](http://www.w3schools.com/xpath/) and many examples are given on Stack Overflow.
 
@@ -31,7 +39,12 @@ Nieuwsblad*. The spiders for *De Redactie* and *Het Laatste Nieuws* needed to ci
 and/or client-side JavaScript code that loads content dynamically. *De Standaard* and *De Tijd* require authentication
 before we can scrape the websites contents.
 
-TODO: explain how the output gets in the database
+After scraping, the articles are written to a database. The Scrapy way to do this is by implementing a *pipeline*.
+Pipelines are defined in [`pipelines.py`](../pipelines.py) and generally they implement behaviour that is executed when
+a spiders yields an item. The database we will be writing to is the database of the epu index web application, which is
+built using the Django framework. As mentioned before, the items returned by the spiders are closely coupled to the
+Django models defined in the web application and hence, a simple [`item.save()`](../pipelines.py#L11) suffices to
+persist the item in the database of the web application.
 
 ## De Morgen
 
@@ -42,7 +55,7 @@ The website of *De Morgen* does not allow to search for articles published the d
 `from` and `to` parameter in the search, but when both these dates are set to the date for yesterday, no results are
 returned (the `to` parameter is exclusive and hence prevents any article to match the query). Therefore, in contrast to
 the other spiders, the spider will include the articles of the current day. This means that some articles will be
-scraped two times, but these duplicates are prevented from entering the database. TODO: Implement this test
+scraped two times, but these duplicates are prevented from entering the database. TODO: Implement this test: https://github.com/Datafable/epu-index/issues/54
 
 The *De Morgen* spider uses [Scrapy Rules](http://doc.scrapy.org/en/latest/topics/spiders.html?highlight=rule#crawling-rules)
  to crawl the search results. The first rule will follow
