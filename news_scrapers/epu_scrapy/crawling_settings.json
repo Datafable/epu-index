@@ -1,4 +1,6 @@
 {
     "period": "yesterday",
-    "term": "economie"
+    "term": "economie",
+    "username": "your_username",
+    "password": "your_password"
 }
