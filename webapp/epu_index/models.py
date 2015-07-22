@@ -10,6 +10,10 @@ class EpuIndexScore(models.Model):
     def __unicode__(self):
         return '{0}: {1}'.format(self.date, self.epu)
 
+    # We alias a field for the API
+    def number_of_newspapers(self):
+        return self.number_of_papers
+
 
 class NewsJournal(models.Model):
     name = models.CharField(max_length=255)
