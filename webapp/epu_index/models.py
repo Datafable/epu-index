@@ -24,7 +24,7 @@ class NewsJournal(models.Model):
 
 
 class Article(models.Model):
-    news_journal = models.ForeignKey(NewsJournal)
+    news_journal = models.ForeignKey(NewsJournal, null=True)
     intro = models.TextField(blank=True, null=True)
     url = models.URLField()
     title = models.CharField(max_length=255)

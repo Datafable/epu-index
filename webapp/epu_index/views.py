@@ -1,22 +1,24 @@
-from datetime import datetime
+import datetime
 
 from rest_framework.decorators import api_view, permission_classes
 
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.settings import api_settings
 
 from rest_framework_csv import renderers as r
 
-from .models import EpuIndexScore
+from .models import EpuIndexScore, Article
 from .serializers import EpuSerializer
 
 
-def _filterdates_epu_queryset(start_date, end_date):
-    def _param_to_date(string):
+def _param_to_date(string):
             """ Takes a YYYY-MM-DD string and return a Date object."""
-            return datetime.strptime(string, '%Y-%m-%d').date()
+            return datetime.datetime.strptime(string, '%Y-%m-%d').date()
+
+
+def _filterdates_epu_queryset(start_date, end_date):
 
     queryset = EpuIndexScore.objects.all().order_by('date')
 
@@ -30,6 +32,27 @@ def _filterdates_epu_queryset(start_date, end_date):
         queryset = queryset.filter(date__lte=_param_to_date(end_date))
 
     return queryset
+
+
+@api_view()
+@permission_classes((AllowAny, ))
+def highest_ranking_article(request):
+    date_string = request.GET.get('date', None)
+    if date_string is None:
+        raise serializers.ValidationError('The date parameter is mandatory.')
+    else:
+        d = _param_to_date(date_string)
+        d_min = datetime.datetime.combine(d, datetime.time.min)
+        d_max = datetime.datetime.combine(d, datetime.time.max)
+        article = Article.objects.filter(published_at__range=(d_min, d_max)).order_by('-epu_score').first()
+
+        if article:
+            return Response({'article_title': article.title,
+                             'article_url': article.url,
+                             'epu': article.epu_score,
+                             'article_newspaper': article.news_journal.name})
+        else:
+            return Response([])  # Following Peter's requirements
 
 
 @api_view()
