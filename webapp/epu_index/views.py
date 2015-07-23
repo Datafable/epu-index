@@ -55,7 +55,14 @@ def epu_per_month(request):
     for k, v in months.iteritems():
         processed_months[k] = v['total_epu'] / v['days_count']
 
-    return Response(processed_months)
+    # 3. Results are in an object, we want an ordered array for API consistency (see ticket #39)
+    results = []
+    for k, v in processed_months.iteritems():
+        results.append({'month': k, 'epu': v})
+
+    results = sorted(results, key=lambda e: e['month'])
+
+    return Response(results)
 
 
 class EpuViewSet(viewsets.ReadOnlyModelViewSet):
