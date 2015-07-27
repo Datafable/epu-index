@@ -120,7 +120,7 @@ class DeredactieSpider(CrawlSpider):
 
         # search for article full text
         article_full_text_fragments = response.xpath('//div[@id="articlebody"]/descendant::p/descendant-or-self::*/text()').extract()
-        article_full_text = ' '.join([x.strip().encode('utf-8') for x in article_full_text_fragments]).strip()
+        article_full_text = ' '.join([x.strip() for x in article_full_text_fragments]).strip()
 
         # reconstruct the url to the nicely rendered page
         url_parts = response.url.split('/')

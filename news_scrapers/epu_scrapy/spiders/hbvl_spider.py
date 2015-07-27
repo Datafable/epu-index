@@ -65,7 +65,7 @@ class HetBelangVanLimburgSpider(CrawlSpider):
 
         # search for article full text
         article_full_text_fragments = article_div.xpath('div[@class="article__intro"]/following-sibling::*/text()').extract()
-        article_full_text = '\n'.join([x.strip().encode('utf-8') for x in article_full_text_fragments]).strip()
+        article_full_text = '\n'.join([x.strip() for x in article_full_text_fragments]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
         article = Article()
