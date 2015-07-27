@@ -3,7 +3,7 @@ var app = (function() {
 
     var overviewChart,
         detailedChart,
-        datesExtent,
+        monthsExtent,
         initialSelectedDate,
         epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
 
@@ -79,7 +79,7 @@ var app = (function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(datesExtent,"years"),
+                        values: createTickSeries(monthsExtent,"years"),
                         format: "%Y"
                     },
                     type: "timeseries"
@@ -136,7 +136,7 @@ var app = (function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(datesExtent,"months"),
+                        values: createTickSeries(monthsExtent,"months"),
                         // This will load ticks for the full potential range,
                         // but only those of the selected data will be shown.
                         format: "%Y-%m"
@@ -179,11 +179,11 @@ var app = (function() {
 
     // Get date range and create charts
     d3.json(epuDataPerMonth, function(d) {
-        // Set datesExtent to be used for ticks
-        datesExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });
         
-        // Set starting point for detailed chart (as 6 months before lastDate)
-        initialSelectedDate = new Date(moment.utc(datesExtent[1]).subtract(6,'months'));
+        // Set monthsExtent to be used for ticks, e.g [2001-01-01, 2008-12-01]
+        monthsExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });
+        // Set starting point for detailed chart (as 6 months before last month)
+        initialSelectedDate = new Date(moment.utc(monthsExtent[1]).subtract(6,'months'));
         
         // Create charts
         createOverviewChart(d);
