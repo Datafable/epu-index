@@ -173,7 +173,8 @@ class DeTijdSpider(Spider):
             /descendant-or-self::*/text()
             '''
         ).extract()
-        article_text = ' '.join([x.strip().replace('\xc2\xad', '') for x in text_parts])
+        # text is returned as unicode, so this time, the soft-hyphen is u'\u00AD'
+        article_text = ' '.join([x.strip().replace(u'\u00AD', '') for x in text_parts])
         article_text = article_text.strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
