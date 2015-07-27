@@ -46,14 +46,13 @@ var app = (function() {
             endDate = moment.utc(selectedDate).add(6,"months"),
             epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
 
-        // Indicate the selected dates on the overview chart
-        // regions() would be more appropriate but is buggy and slow
-        overviewChart.xgrids([
+        // Show the selected dates on the overview chart
+        overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
             {value: startDate},
             {value: endDate}
         ]);
 
-        // Show the selected dates in the title
+        // Update the selected dates in the title
         unloadDate();
         selectedYearContainer.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
 
@@ -76,7 +75,10 @@ var app = (function() {
         var date = moment.utc(selectedDate),
             highestRankingArticle = "https://epu-index.herokuapp.com/api/highest-ranking-article/?format=json&date=" + date.format("YYYY-MM-DD");
 
-        // Update title
+        // Show the selected date on the detailed chart
+        detailedChart.xgrids([{value: selectedDate}]);
+
+        // Update the selected date in the title
         selectedDateContainer.text("on " + date.format("dddd, MMMM Do YYYY"));
 
         d3.json(highestRankingArticle, function(d) {
@@ -95,8 +97,12 @@ var app = (function() {
     };
 
     var unloadDate = function() {
+        // Remove date from title
         selectedDateContainer.text("");
+        // Reset article
         articleContainer.text("Select a day from the top chart to see the highest ranking article.");
+        // Remove vertical line indicating selected date from detailed chart
+        detailedChart.xgrids.remove();
     };
 
 
@@ -229,8 +235,8 @@ var app = (function() {
         initialSelectedDate = new Date(moment.utc(monthsExtent[1]).subtract(6,'months'));
         
         // Create charts
+        createDetailedChart(); // TODO: Is there a chance this chart is before it is referenced, e.g. via unloadDate()?
         createOverviewChart(d);
-        createDetailedChart(); // TODO: Is there a chance this chart is not yet ready before data are loaded?
     });
     
 })();
