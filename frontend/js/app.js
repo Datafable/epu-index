@@ -7,6 +7,7 @@ var app = (function() {
         initialSelectedDate,
         epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
 
+
     // Chart layout functions
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
 
@@ -33,9 +34,11 @@ var app = (function() {
         return ticks;
     };
 
+
     // Chart interaction functions
     var loadYear = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after
+        // And (re)load the detailed chart
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
             endDate = moment.utc(selectedDate).add(6,"months"),
             epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
@@ -76,7 +79,7 @@ var app = (function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(monthsExtent,"years"),
+                        values: createTickSeries(monthsExtent, "years"),
                         format: "%Y"
                     },
                     type: "timeseries"
@@ -133,7 +136,7 @@ var app = (function() {
                         right: 0
                     },
                     tick: {
-                        values: createTickSeries(monthsExtent,"months"),
+                        values: createTickSeries(monthsExtent, "months"),
                         // This will load ticks for the full potential range,
                         // but only those of the selected data will be shown.
                         format: "%Y-%m"
@@ -174,9 +177,11 @@ var app = (function() {
         });
     };
 
+
     // Get date range and create charts
     d3.json(epuDataPerMonth, function(d) {
         // Set monthsExtent to be used for ticks, e.g [2001-01-01, 2008-12-01]
+        // Even though the 1st of month is hardcoded, all downstream functions can work with other dates as well, e.g. createTickSeries() and loadYear().
         monthsExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });
         // Add one month to the extent, to cover data after the 1st day of the initial last month ([2001-01-01, 2009-01-01])
         monthsExtent[1] = new Date(moment.utc(monthsExtent[1]).add(1,'months'));
