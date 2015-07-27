@@ -71,67 +71,64 @@ var app = (function() {
     };
 
     // Chart creation functions
-    var createOverviewChart = function() {
+    var createOverviewChart = function(data) {
         // Create an overview chart WITH data, then loadYear()
-        var epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
-        d3.json(epuDataPerMonth, function(d) {
-            var datesPerMonth = d.map(function(entry) { return new Date(entry.month); }),
-                epuPerMonth = d.map(function(entry) { return entry.epu; });
+        var datesPerMonth = data.map(function(entry) { return new Date(entry.month); }),
+            epuPerMonth = data.map(function(entry) { return entry.epu; });
 
-            overviewChart = c3.generate({
-                axis: {
-                    x: {
-                        localtime: false,
-                        padding: {
-                            left: 0,
-                            right: 0
-                        },
-                        tick: {
-                            values: createTickSeries(datesExtent,"years"),
-                            format: "%Y"
-                        },
-                        type: "timeseries"
+        overviewChart = c3.generate({
+            axis: {
+                x: {
+                    localtime: false,
+                    padding: {
+                        left: 0,
+                        right: 0
                     },
-                    y: {
-                        show: false
-                    }
-                },
-                bindto: "#overview-chart",
-                data: {
-                    columns: [
-                        ["months"].concat(datesPerMonth),
-                        ["epu"].concat(epuPerMonth)
-                    ],
-                    onclick: function(d) { loadYear(d.x); },
-                    selection: {
-                        grouped: true // Necessary to have onclick functionality for whole x, not only point
+                    tick: {
+                        values: createTickSeries(datesExtent,"years"),
+                        format: "%Y"
                     },
-                    type: "area-spline",
-                    x: "months"
+                    type: "timeseries"
                 },
-                legend: {
-                    show: false
-                },
-                padding: {
-                    left: 30,
-                    right: 20
-                },
-                point: {
-                    focus: {
-                        expand: {
-                            r: 4
-                        }
-                    },
-                    r: 0
-                },
-                tooltip: {
+                y: {
                     show: false
                 }
-            });
-            
-            // Once chart is created, load year data. Probably better via oninit(), but overviewChart still undefined at that point.
-            loadYear(initialSelectedDate);
+            },
+            bindto: "#overview-chart",
+            data: {
+                columns: [
+                    ["months"].concat(datesPerMonth),
+                    ["epu"].concat(epuPerMonth)
+                ],
+                onclick: function(d) { loadYear(d.x); },
+                selection: {
+                    grouped: true // Necessary to have onclick functionality for whole x, not only point
+                },
+                type: "area-spline",
+                x: "months"
+            },
+            legend: {
+                show: false
+            },
+            padding: {
+                left: 30,
+                right: 20
+            },
+            point: {
+                focus: {
+                    expand: {
+                        r: 4
+                    }
+                },
+                r: 0
+            },
+            tooltip: {
+                show: false
+            }
         });
+        
+        // Once chart is created, load year data. Probably better via oninit(), but overviewChart still undefined at that point.
+        loadYear(initialSelectedDate);
     };
 
     var createDetailedChart = function() {
@@ -195,7 +192,7 @@ var app = (function() {
         initialSelectedDate = new Date(moment.utc(datesExtent[1]).subtract(6,'months'));
         
         // Create charts
-        createOverviewChart();
+        createOverviewChart(d);
         createDetailedChart(); // TODO: Is there a chance this chart is not yet ready before data are loaded?
     });
     
