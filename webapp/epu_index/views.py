@@ -1,5 +1,7 @@
 import datetime
 
+from django.db.models.functions import Coalesce
+
 from rest_framework.decorators import api_view, permission_classes
 
 from rest_framework import viewsets, serializers
@@ -44,7 +46,11 @@ def highest_ranking_article(request):
         d = _param_to_date(date_string)
         d_min = datetime.datetime.combine(d, datetime.time.min)
         d_max = datetime.datetime.combine(d, datetime.time.max)
-        article = Article.objects.filter(published_at__range=(d_min, d_max)).order_by('-epu_score').first()
+
+        # EPU null is considered to be 0 for this ranking.
+        article = Article.objects.annotate(epu_score_without_null=Coalesce('epu_score', 0))\
+                                 .filter(published_at__range=(d_min, d_max))\
+                                 .order_by('-epu_score_without_null').first()
 
         if article:
             return Response({'article_title': article.title,
@@ -52,7 +58,8 @@ def highest_ranking_article(request):
                              'epu': article.epu_score,
                              'article_newspaper': article.news_journal.name})
         else:
-            return Response([])  # Following Peter's requirements
+            # Following Peter's requirements: empty array if no results for that day
+            return Response([])
 
 
 @api_view()
