@@ -3,7 +3,9 @@ var app = (function() {
 
     var overviewChart,
         detailedChart,
-        datesExtent;
+        datesExtent,
+        initialSelectedDate,
+        epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
 
     // Chart layout functions
     var formatAsFullDate = d3.time.format("%Y-%m-%d");
@@ -56,8 +58,8 @@ var app = (function() {
         // Retrieve epu data per day and populate chart
         var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDateString + "&end_date=" + endDateString;
         d3.json(epuDataPerDay, function(d) {
-            var datesPerDay = d.map(function(e) { return new Date(e.date); }),
-                epuPerDay = d.map(function(e) { return e.epu; });
+            var datesPerDay = d.map(function(entry) { return new Date(entry.date); }),
+                epuPerDay = d.map(function(entry) { return entry.epu; });
             
             detailedChart.load({
                 columns: [
@@ -69,7 +71,7 @@ var app = (function() {
     };
 
     // Chart creation functions
-    var createOverviewChart = function(lastDateMinusSixMonths) {
+    var createOverviewChart = function() {
         // Create an overview chart WITH data, then loadYear()
         var epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
         d3.json(epuDataPerMonth, function(d) {
@@ -128,7 +130,7 @@ var app = (function() {
             });
             
             // Once chart is created, load year data. Probably better via oninit(), but overviewChart still undefined at that point.
-            loadYear(lastDateMinusSixMonths);
+            loadYear(initialSelectedDate);
         });
     };
 
@@ -185,15 +187,16 @@ var app = (function() {
     };
 
     // Get date range and create charts
-    var extentData = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT max(date), min(date) FROM epu_tail";
-    d3.json(extentData, function(d) {
-        var firstDate = new Date(d.rows[0].min),
-            lastDate = new Date(d.rows[0].max),
-            lastDateMinusSixMonths = new Date(moment.utc(lastDate).subtract(6,'months'));
-
-        datesExtent = [firstDate,lastDate];
-        createOverviewChart(lastDateMinusSixMonths);
-        createDetailedChart();
+    d3.json(epuDataPerMonth, function(d) {
+        // Set datesExtent to be used for ticks
+        datesExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });
+        
+        // Set starting point for detailed chart (as 6 months before lastDate)
+        initialSelectedDate = new Date(moment.utc(datesExtent[1]).subtract(6,'months'));
+        
+        // Create charts
+        createOverviewChart();
+        createDetailedChart(); // TODO: Is there a chance this chart is not yet ready before data are loaded?
     });
     
 })();
