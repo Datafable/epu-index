@@ -54,7 +54,7 @@ var app = (function() {
     // Chart data load functions
     var populateDetailedChart = function(startDateString,endDateString) {
         // Retrieve epu data per day and populate chart
-        var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start=" + startDateString + "&end=" + endDateString;
+        var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDateString + "&end_date=" + endDateString;
         d3.json(epuDataPerDay, function(d) {
             var datesPerDay = d.map(function(e) { return new Date(e.date); }),
                 epuPerDay = d.map(function(e) { return e.epu; });
