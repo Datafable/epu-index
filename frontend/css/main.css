@@ -5,6 +5,38 @@ body {
     font: 0.75em Arial, Helvetica, sans-serif;
     line-height: 19px;  
 }
+
+a, a:active, a:visited {
+    color: #333333;
+    text-decoration: none;
+}
+
+h1 {
+    border-bottom: 3px solid #30393d;
+    color: #30393d;
+    display: block;
+    font: bold 20px Arial, Helvetica, sans-serif;
+    position: relative;
+}
+h2 {
+    font: 2.2em Arial, Helvetica, sans-serif;
+}
+h3 {
+    font: bold 1.7em Arial, Helvetica, sans-serif;
+}
+h4 {
+    font: bold 1.4em Arial, Helvetica, sans-serif;
+}
+
+blockquote {
+    background: #f8fbfc url(http://www.applieddatamining.com/cms/themes/magazeen_lite/images/blockquote.gif) no-repeat top left;
+    border: 1px solid #edeff0;
+    height: auto;
+    margin: 0 auto;
+    padding: 15px 20px;
+    width: 80%;
+}
+
 .main {
     margin: 0 auto;
     width: 800px;
@@ -20,9 +52,29 @@ body {
     border-bottom: 1px solid #e8ebec;
     margin: 0;
     padding: 22px 22px 11px;
-}
+    }
+    .node-content h1 {
+        margin: 10px 0;
+        padding: 10px 0;
+    }
+    .node-content h2 {
+        color: #53798b;
+        margin: 10px 0;
+        padding: 0;
+    }
+    .node-content h3 {
+        color: #53798b;
+        margin: 10px 0;
+        padding: 0;
+    }
+    .node-content h4 {
+        color: #53798b;
+        margin: 10px 0;
+        padding: 0;
+    }
 
-/* Chart styles */
+
+/* Custom styles */
 #detailed-chart {
     height: 300px;
 }
