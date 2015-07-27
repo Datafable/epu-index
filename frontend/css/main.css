@@ -84,3 +84,6 @@ blockquote {
 .c3-xgrid-focus {
     stroke: black!important;
 }
+.c3-xgrid-line line {
+    stroke: black!important;
+}
