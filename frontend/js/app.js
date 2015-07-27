@@ -4,6 +4,8 @@ var app = (function() {
     var overviewChart,
         detailedChart,
         selectedYearContainer = d3.select("#selected-year"),
+        selectedDateContainer = d3.select("#selected-date"),
+        articleContainer = d3.select("#article"),
         monthsExtent,
         initialSelectedDate,
         epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
@@ -52,6 +54,7 @@ var app = (function() {
         ]);
 
         // Show the selected dates in the title
+        unloadDate();
         selectedYearContainer.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
 
         // Reload detailed chart
@@ -67,6 +70,35 @@ var app = (function() {
             });
         });
     };
+
+    var loadDate = function(selectedDate) {
+        // Given a selectedDate (e.g. 2010-03-21), show the highest ranking article and word cloud for that day
+        var date = moment.utc(selectedDate),
+            highestRankingArticle = "https://epu-index.herokuapp.com/api/highest-ranking-article/?format=json&date=" + date.format("YYYY-MM-DD");
+
+        // Update title
+        selectedDateContainer.text("on " + date.format("dddd, MMMM Do YYYY"));
+
+        d3.json(highestRankingArticle, function(d) {
+            var html = "";
+            if (d.article_title) { // Article returned
+                if (d.article_url) {
+                    html = d.article_title + ' - <a href="' + d.article_url + '" target="_blank">' + d.article_newspaper + '</a>';
+                } else {
+                    html = d.article_title + ' - ' + d.article_newspaper;
+                }
+            } else {
+                html = "No article available.";
+            }
+            articleContainer.html(html);
+        });
+    };
+
+    var unloadDate = function() {
+        selectedDateContainer.text("");
+        articleContainer.text("Select a day from the top chart to see the highest ranking article.");
+    };
+
 
     // Chart creation functions
     var createOverviewChart = function(data) {
@@ -154,6 +186,10 @@ var app = (function() {
                     ["days"],
                     ["epu"]
                 ],
+                onclick: function(d) { loadDate(d.x); },
+                selection: {
+                    grouped: true
+                },
                 type: "area-spline",
                 x: "days"
             },
