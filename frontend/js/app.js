@@ -71,11 +71,10 @@ var app = (function() {
     // Chart creation functions
     var createOverviewChart = function(lastDateMinusSixMonths) {
         // Create an overview chart WITH data, then loadYear()
-        var epuDataPerMonth = "http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT (sum(number_of_articles)::real / sum(number_of_newspapers)::real) as epu, to_char(date, 'YYYY-MM') as date FROM epu_tail GROUP BY to_char(date, 'YYYY-MM') ORDER BY to_char(date, 'YYYY-MM')";
+        var epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
         d3.json(epuDataPerMonth, function(d) {
-            // TODO: update endpoint and remove "rows" from mapping
-            var datesPerMonth = d.rows.map(function(e) { return new Date(e.date); }),
-                epuPerMonth = d.rows.map(function(e) { return e.epu; });
+            var datesPerMonth = d.map(function(entry) { return new Date(entry.month); }),
+                epuPerMonth = d.map(function(entry) { return entry.epu; });
 
             overviewChart = c3.generate({
                 axis: {
