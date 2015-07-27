@@ -23,9 +23,8 @@ router = routers.DefaultRouter()
 router.register(r'epu', views.EpuViewSet)
 
 urlpatterns = [
-    url(r'^api/epu-per-month/', views.epu_per_month),
-    url(r'^api/highest-ranking-article/', views.highest_ranking_article),
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+
     url(r'^admin/', include(admin.site.urls)),
 ]
