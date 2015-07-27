@@ -40,7 +40,8 @@ var app = (function() {
     var loadYear = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
-            endDate = moment.utc(selectedDate).add(6,"months");
+            endDate = moment.utc(selectedDate).add(6,"months"),
+            epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
 
         // Indicate the selected dates on the overview chart
         // regions() would be more appropriate but is buggy and slow
@@ -50,13 +51,6 @@ var app = (function() {
         ]);
 
         // Reload detailed chart
-        populateDetailedChart(startDate.format("YYYY-MM-DD"),endDate.format("YYYY-MM-DD"));
-    };
-
-    // Chart data load functions
-    var populateDetailedChart = function(startDateString,endDateString) {
-        // Retrieve epu data per day and populate chart
-        var epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDateString + "&end_date=" + endDateString;
         d3.json(epuDataPerDay, function(d) {
             var datesPerDay = d.map(function(entry) { return new Date(entry.date); }),
                 epuPerDay = d.map(function(entry) { return entry.epu; });
