@@ -3,6 +3,7 @@ var app = (function() {
 
     var overviewChart,
         detailedChart,
+        selectedYearContainer = d3.select("#selected-year"),
         monthsExtent,
         initialSelectedDate,
         epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
@@ -49,6 +50,9 @@ var app = (function() {
             {value: startDate},
             {value: endDate}
         ]);
+
+        // Show the selected dates in the title
+        selectedYearContainer.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
 
         // Reload detailed chart
         d3.json(epuDataPerDay, function(d) {
