@@ -3,7 +3,8 @@ var app = (function() {
 
     var selectedYearElement = d3.select("#selected-year"),
         selectedDateElement = d3.select("#selected-date"),
-        articleElement = d3.select("#article");
+        articleElement = d3.select("#article"),
+        downloadElement = d3.select("#download");
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
@@ -40,11 +41,17 @@ var app = (function() {
 
     // Chart interaction functions
     var loadYear = function(selectedDate) {
-        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after
-        // And (re)load the detailed chart
+        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after and (re)load the detailed chart
         var startDate = moment.utc(selectedDate).subtract(6,"months"),
             endDate = moment.utc(selectedDate).add(6,"months"),
-            epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
+            epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
+
+        // Update download link
+        downloadElement.attr("href", epuDataPerDay + "&format=csv");
+
+        // Update the selected dates in the title
+        unloadDate();
+        selectedYearElement.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
 
         // Show the selected dates on the overview chart
         overviewChart.xgrids([ // regions() would be more appropriate but is buggy and slow
@@ -52,12 +59,8 @@ var app = (function() {
             {value: endDate}
         ]);
 
-        // Update the selected dates in the title
-        unloadDate();
-        selectedYearElement.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
-
         // Reload detailed chart
-        d3.json(epuDataPerDay, function(d) {
+        d3.json(epuDataPerDay + "&format=json", function(d) {
             var datesPerDay = d.map(function(entry) { return new Date(entry.date); }),
                 epuPerDay = d.map(function(entry) { return entry.epu; });
             
@@ -75,11 +78,11 @@ var app = (function() {
         var date = moment.utc(selectedDate),
             highestRankingArticle = "https://epu-index.herokuapp.com/api/highest-ranking-article/?format=json&date=" + date.format("YYYY-MM-DD");
 
-        // Show the selected date on the detailed chart
-        detailedChart.xgrids([{value: selectedDate}]);
-
         // Update the selected date in the title
         selectedDateElement.text("on " + date.format("dddd, MMMM Do YYYY"));
+
+        // Show the selected date on the detailed chart
+        detailedChart.xgrids([{value: selectedDate}]);
 
         d3.json(highestRankingArticle, function(d) {
             var html = "";
@@ -238,14 +241,6 @@ var app = (function() {
         createDetailedChart(); // TODO: Is there a chance this chart is before it is referenced, e.g. via unloadDate()?
         createOverviewChart(d);
     });
-
-
-    // Download link
-    d3.select("#download").on("click", function() {
-        d3.event.preventDefault(); // Disable href functionality
-        window.location = "https://epu-index.herokuapp.com/api/epu/?format=csv"; // TODO: add variables
-    });
-    
 })();
 
 
