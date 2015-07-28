@@ -41,9 +41,9 @@ var app = (function() {
 
     // Chart interaction functions
     var loadYear = function(selectedDate) {
-        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after and (re)load the detailed chart
-        var startDate = moment.utc(selectedDate).subtract(6,"months"),
-            endDate = moment.utc(selectedDate).add(6,"months"),
+        // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after to cover one year and (re)load the detailed chart and download link
+        var startDate = moment.utc(selectedDate).subtract(6,"months"), // 2009-09-01
+            endDate = moment.utc(selectedDate).add(6,"months").subtract(1,"day"), // 2010-09-01 minus 1 day = 2010-08-31 = cover exactly one year
             epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
 
         // Update download link
