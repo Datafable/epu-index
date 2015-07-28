@@ -1,13 +1,14 @@
 var app = (function() {
     "use strict";
 
-    var overviewChart,
-        detailedChart,
-        selectedYearContainer = d3.select("#selected-year"),
-        selectedDateContainer = d3.select("#selected-date"),
-        articleContainer = d3.select("#article"),
-        monthsExtent,
-        initialSelectedDate,
+    var selectedYearElement = d3.select("#selected-year"),
+        selectedDateElement = d3.select("#selected-date"),
+        articleElement = d3.select("#article");
+        
+    var overviewChart,          // C3 overview chart, showing all data
+        detailedChart,          // C3 detailed chart, showing a year of data
+        monthsExtent,           // [minimum date, maximum date] of data, rounded to 1st of month
+        initialSelectedDate,    // Center date for initial load of detailed chart
         epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
 
 
@@ -54,7 +55,7 @@ var app = (function() {
 
         // Update the selected dates in the title
         unloadDate();
-        selectedYearContainer.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
+        selectedYearElement.text("from " + startDate.format("MMMM YYYY") + " to " + endDate.format("MMMM YYYY"));
 
         // Reload detailed chart
         d3.json(epuDataPerDay, function(d) {
@@ -79,7 +80,7 @@ var app = (function() {
         detailedChart.xgrids([{value: selectedDate}]);
 
         // Update the selected date in the title
-        selectedDateContainer.text("on " + date.format("dddd, MMMM Do YYYY"));
+        selectedDateElement.text("on " + date.format("dddd, MMMM Do YYYY"));
 
         d3.json(highestRankingArticle, function(d) {
             var html = "";
@@ -92,15 +93,15 @@ var app = (function() {
             } else {
                 html = "No article available.";
             }
-            articleContainer.html(html);
+            articleElement.html(html);
         });
     };
 
     var unloadDate = function() {
         // Remove date from title
-        selectedDateContainer.text("");
+        selectedDateElement.text("");
         // Reset article
-        articleContainer.text("Select a day from the top chart to see the highest ranking article.");
+        articleElement.text("Select a day from the top chart to see the highest ranking article.");
         // Remove vertical line indicating selected date from detailed chart
         detailedChart.xgrids.remove();
     };
