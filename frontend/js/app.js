@@ -238,6 +238,13 @@ var app = (function() {
         createDetailedChart(); // TODO: Is there a chance this chart is before it is referenced, e.g. via unloadDate()?
         createOverviewChart(d);
     });
+
+
+    // Download link
+    d3.select("#download").on("click", function() {
+        d3.event.preventDefault(); // Disable href functionality
+        window.location = "https://epu-index.herokuapp.com/api/epu/?format=csv"; // TODO: add variables
+    });
     
 })();
 
