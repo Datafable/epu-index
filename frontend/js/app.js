@@ -8,8 +8,7 @@ var app = (function() {
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
         monthsExtent,           // [minimum date, maximum date] of data, rounded to 1st of month
-        initialSelectedDate,    // Center date for initial load of detailed chart
-        epuDataPerMonth = "https://epu-index.herokuapp.com/api/epu-per-month/?format=json";
+        initialSelectedDate;    // Center date for initial load of detailed chart
 
 
     // Chart layout functions
@@ -225,8 +224,8 @@ var app = (function() {
     };
 
 
-    // Get date range and create charts
-    d3.json(epuDataPerMonth, function(d) {
+    // Get EPU data per month, derive date range and create charts
+    d3.json("https://epu-index.herokuapp.com/api/epu-per-month/?format=json", function(d) {
         // Set monthsExtent to be used for ticks, e.g [2001-01-01, 2008-12-01]
         // Even though the 1st of month is hardcoded, all downstream functions can work with other dates as well, e.g. createTickSeries() and loadYear().
         monthsExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });
