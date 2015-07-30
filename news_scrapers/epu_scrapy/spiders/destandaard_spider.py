@@ -29,7 +29,7 @@ def set_start_url(settings):
 class DeStandaardSpider(Spider):
     name = 'standaard' # name of the spider, to be used when running from command line
     allowed_domains = ['www.standaard.be']
-    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings_test.json')))
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = ['http://www.standaard.be/account/logon']
 
     def parse(self, response):

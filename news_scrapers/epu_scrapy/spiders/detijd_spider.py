@@ -30,7 +30,7 @@ def set_start_url(settings):
 class DeTijdSpider(Spider):
     name = 'detijd' # name of the spider, to be used when running from command line
     allowed_domains = ['tijd.be']
-    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings_test.json')))
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = ['http://diensten.tijd.be']
 
     def __init__(self):
