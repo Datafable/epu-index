@@ -73,14 +73,7 @@ blockquote {
         padding: 0;
     }
 
-
 /* Custom styles */
-#detailed-chart {
-    height: 300px;
-}
-#overview-chart {
-    height: 100px;
-}
 .c3-xgrid-focus {
     stroke: black!important;
 }

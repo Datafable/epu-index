@@ -236,7 +236,7 @@ var app = (function() {
                     };
                 }),
                 width = parseInt(wordCloudElement.style("width"),10), // Width of parent div
-                height = 300,
+                height = parseInt(wordCloudElement.style("height"),10), // Height of parent div
                 minFontSize = 10,
                 maxFontSize = 60,
                 fontSize = d3.scale.linear() // Function to translate word count to font-size
