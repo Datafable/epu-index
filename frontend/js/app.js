@@ -4,7 +4,8 @@ var app = (function() {
     var selectedYearElement = d3.select("#selected-year"),
         selectedDateElement = d3.select("#selected-date"),
         articleElement = d3.select("#article"),
-        downloadElement = d3.select("#download");
+        downloadElement = d3.select("#download"),
+        wordcloudElement = d3.select("#wordcloud");
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
@@ -226,42 +227,63 @@ var app = (function() {
         });
     };
 
-    var wordcloud = d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=select text,count from term_frequencies limit 30", function(d) {
-        var fill = d3.scale.category20(); // TODO: create custom color schema
-        var scalingFactor = 7; // TODO: should be determined based on input counts
+    var createWordCloud = function() {
+        d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT text, count FROM term_frequencies limit 60", function(d) {
+            var wordsAndCounts = d.rows.map(function(entry) {
+                    return  { 
+                        inputText: entry.text,
+                        inputCount: entry.count
+                    };
+                }),
+                width = parseInt(wordcloudElement.style("width"),10), // Width of parent div
+                height = 400,
+                minFontSize = 10,
+                maxFontSize = 60,
+                fontSize = d3.scale.linear() // Function to translate word count to font-size
+                    .domain([
+                        d3.min(wordsAndCounts, function(d) {
+                            return d.inputCount;
+                        }),
+                        d3.max(wordsAndCounts, function(d) {
+                            return d.inputCount;
+                        })
+                    ])
+                    .range([minFontSize,maxFontSize]),
+                fontFamily = "Arial, Helvetica, sans-serif",
+                textColor = wordcloudElement.style("color"), // Text color of parent div
+                angles = [-90, -45, 0]; // Angles at which words can appear
 
-        var w = d.rows.map(function(f) {
-            return {text: f.text, size: 10 + f.count * scalingFactor};
+            var draw = function(wordcloud) {
+                wordcloudElement.append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", "translate(" + [width / 2, height / 2] + ")") // Centre point
+                    .selectAll("text")
+                    .data(wordcloud)
+                    .enter().append("text")
+                    .style("font-family", d.font)
+                    .style("font-size", function(d) { return d.size + "px"; })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ") rotate(" + d.rotate + ")";
+                    })
+                    .text(function(d) { return d.text; })
+                    .style("fill",textColor);
+            };
+
+            d3.layout.cloud()
+                .size([width, height])
+                .words(wordsAndCounts)
+                .text(function(d) { return d.inputText.toUpperCase(); }) // Uniformize to uppercase
+                .rotate(function() { return angles[Math.floor(Math.random() * angles.length)]; }) // Select one of the angles at random
+                .font(fontFamily) // Define here for better display positioning calculation
+                .fontSize(function(d) { return fontSize(d.inputCount); }) // Translate count to font-size
+                .padding(function(d) { return fontSize(d.inputCount) / 10; }) // Set padding to font-size / 10
+                .on("end", draw) // Call the draw function with the wordcloud data
+                .start();
         });
-
-        d3.layout.cloud().size([300, 300])
-            .words(w)
-            .padding(0)
-            .rotate(function() { return ~~(Math.random() * 2) * 90; })
-            .font("Georgia")
-            .fontSize(function(d) { return d.size; })
-            .on("end", draw)
-            .start();
-
-        function draw(words) {
-            d3.select("#word-cloud").append("svg")
-                .attr("width", 300)
-                .attr("height", 300)
-                .append("g")
-                .attr("transform", "translate(150,150)")
-                .selectAll("text")
-                .data(words)
-                .enter().append("text")
-                .style("font-size", function(d) { return d.size + "px"; })
-                .style("font-family", "Georgia")
-                .style("fill", function(d, i) { return fill(i); })
-                .attr("text-anchor", "middle")
-                .attr("transform", function(d) {
-                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                })
-                .text(function(d) { return d.text; });
-        }
-    });
+    };
 
 
     // Get EPU data per month, derive date range and create charts
@@ -277,5 +299,6 @@ var app = (function() {
         // Create charts
         createDetailedChart(); // TODO: Is there a chance this chart is before it is referenced, e.g. via unloadDate()?
         createOverviewChart(d);
+        createWordCloud();
     });
 })();
