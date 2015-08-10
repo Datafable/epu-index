@@ -72,6 +72,9 @@ var app = (function() {
                 ]
             });
         });
+
+        // Reload word cloud
+        createWordCloud(startDate, endDate);
     };
 
     var loadDate = function(selectedDate) {
@@ -98,6 +101,9 @@ var app = (function() {
             }
             articleElement.html(html);
         });
+
+        // Reload word cloud
+        createWordCloud(date, date);
     };
 
     var unloadDate = function() {
@@ -227,7 +233,12 @@ var app = (function() {
         });
     };
 
-    var createWordCloud = function() {
+    var createWordCloud = function(startDate, endDate) {
+        // Remove previous word cloud
+        wordCloudElement.html("");
+
+        // Create new word cloud
+        // d3.json("https://epu-index.herokuapp.com/api/.../?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
         d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT text, count FROM term_frequencies limit 60", function(d) {
             var wordsAndCounts = d.rows.map(function(entry) {
                     return  { 
@@ -299,6 +310,5 @@ var app = (function() {
         // Create charts
         createDetailedChart(); // TODO: Is there a chance this chart is before it is referenced, e.g. via unloadDate()?
         createOverviewChart(d);
-        createWordCloud();
     });
 })();
