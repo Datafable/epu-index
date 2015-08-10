@@ -5,7 +5,7 @@ var app = (function() {
         selectedDateElement = d3.select("#selected-date"),
         articleElement = d3.select("#article"),
         downloadElement = d3.select("#download"),
-        wordcloudElement = d3.select("#wordcloud");
+        wordCloudElement = d3.select("#word-cloud");
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
@@ -235,7 +235,7 @@ var app = (function() {
                         inputCount: entry.count
                     };
                 }),
-                width = parseInt(wordcloudElement.style("width"),10), // Width of parent div
+                width = parseInt(wordCloudElement.style("width"),10), // Width of parent div
                 height = 300,
                 minFontSize = 10,
                 maxFontSize = 60,
@@ -250,17 +250,17 @@ var app = (function() {
                     ])
                     .range([minFontSize,maxFontSize]),
                 fontFamily = "Arial, Helvetica, sans-serif",
-                textColor = wordcloudElement.style("color"), // Text color of parent div
+                textColor = wordCloudElement.style("color"), // Text color of parent div
                 angles = [-90, -45, 0]; // Angles at which words can appear
 
-            var draw = function(wordcloud) {
-                wordcloudElement.append("svg")
+            var draw = function(wordCloudData) {
+                wordCloudElement.append("svg")
                     .attr("width", width)
                     .attr("height", height)
                     .append("g")
                     .attr("transform", "translate(" + [width / 2, height / 2] + ")") // Centre point
                     .selectAll("text")
-                    .data(wordcloud)
+                    .data(wordCloudData)
                     .enter().append("text")
                     .style("font-family", d.font)
                     .style("font-size", function(d) { return d.size + "px"; })
@@ -280,7 +280,7 @@ var app = (function() {
                 .font(fontFamily) // Define here for better display positioning calculation
                 .fontSize(function(d) { return fontSize(d.inputCount); }) // Translate count to font-size
                 .padding(function(d) { return fontSize(d.inputCount) / 10; }) // Set padding to font-size / 10
-                .on("end", draw) // Call the draw function with the wordcloud data
+                .on("end", draw) // Call the draw function with the word cloud data
                 .start();
         });
     };
