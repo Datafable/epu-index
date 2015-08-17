@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
-from epu_index.models import NewsJournal
+from epu_index.models import NewsJournal, JournalsScraped
 from django.db import IntegrityError
+import datetime
 import json
 import os
 import re
@@ -13,6 +14,10 @@ class EpuScrapyPipeline(object):
         settings = json.load(open(settingsfile))
         self.journals = {j.spider_name: j for j in NewsJournal.objects.all()}
         self.word_weights = self._read_model_file(os.path.join(os.path.dirname(settingsfile), settings['model_file']))
+
+    def close_spider(self, spider):
+        js = JournalsScraped(journal=self.journals[spider.name], date=datetime.datetime.now().date())
+        js.save()
 
     def process_item(self, item, spider):
         item['news_journal'] = self.journals[spider.name]
