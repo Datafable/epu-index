@@ -11,6 +11,8 @@ STOPWORDS = ('dus', 'zo', 'zoal', 'zoals', 'ove', 'boven', 'bovendien', 'bovenal
              'onmiddellijk', 'laatst', 'laatste', 'voornamelijk', 'niettemin', 'sinds', 'soms',
              'hen', 'hun', 'hem', 'haar', 'jou', 'jouw')
 
+ARTICLES_APU_CUTOFF = -0.15
+
 
 class EpuIndexScore(models.Model):
     date = models.DateField(unique=True)
