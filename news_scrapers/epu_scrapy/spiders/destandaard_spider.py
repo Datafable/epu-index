@@ -158,7 +158,8 @@ class DeStandaardSpider(Spider):
             '''
         ).extract()
         if len(published_date_parts) > 0:
-            datetime_str = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format
+            datetime_str_with_tz = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format...
+            datetime_str = datetime_str_with_tz[0:-7] # ...but we'll drop the time zone information
         else:
             datetime_str = ''
 
@@ -219,7 +220,8 @@ class DeStandaardSpider(Spider):
             '''
         ).extract()
         if len(published_date_parts) > 0:
-            datetime_str = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format
+            datetime_str_with_tz = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format...
+            datetime_str = datetime_str_with_tz[0:-7] # ...but we'll drop the time zone information
         else:
             datetime_str = ''
 
