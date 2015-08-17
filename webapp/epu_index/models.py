@@ -2,7 +2,7 @@ from django.db import models
 
 
 class EpuIndexScore(models.Model):
-    date = models.DateField()
+    date = models.DateField(unique=True)
     number_of_articles = models.IntegerField()
     number_of_papers = models.IntegerField()
     epu = models.FloatField()
@@ -28,6 +28,9 @@ class NewsJournal(models.Model):
 class JournalsScraped(models.Model):
     journal = models.ForeignKey(NewsJournal)
     date = models.DateField()
+
+    class Meta:
+        unique_together = ('journal', 'date')
 
 
 class Article(models.Model):
