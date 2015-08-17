@@ -1,5 +1,7 @@
 import datetime
 
+from collections import Counter
+
 from django.db.models.functions import Coalesce
 
 from rest_framework.decorators import api_view, permission_classes
@@ -34,6 +36,54 @@ def _filterdates_epu_queryset(start_date, end_date):
         queryset = queryset.filter(date__lte=_param_to_date(end_date))
 
     return queryset
+
+# TO TEST:
+# - That only positive EPU articles are checked.
+# - That the default values works for the 3 parameters 
+# - That the stopwords are avoided
+# - That all is converted to lowercase
+# - That the results are correct (form and format)
+
+# TO DOCUMENT IN TICKET:
+# - endpoint URL
+# - default parameters
+
+# See API discussion/description in #8.
+@api_view()
+@permission_classes((AllowAny, ))
+def term_frequency(request):
+    start_date = request.GET.get('start_date', None)
+    end_date = request.GET.get('end_date', None)
+    max_words = int(request.GET.get('max_words', 50))
+
+    # We start with only an article with positive EPU...
+    articles = Article.objects.filter(epu_score__gt=0)
+
+    # ...if start_date is provided, we refine...
+    if start_date:
+        d = _param_to_date(start_date)
+        d_min = datetime.datetime.combine(d, datetime.time.min)
+        articles = articles.filter(published_at__gte=d_min)
+
+    # ... if end_date is provided, we refine further ...
+    if end_date:
+        d = _param_to_date(end_date)
+        d_max = datetime.datetime.combine(d, datetime.time.max)
+        articles = articles.filter(published_at__lte=d_max)
+
+    cnt = Counter()
+
+    for a in articles:
+        words = a.cleaned_text_without_stopwords().split()
+        for w in words:
+            cnt[w] += 1
+
+    most_common_words = cnt.most_common(max_words)
+
+    # Transform result to the required format:
+    r = [{"word": x[0], "count": x[1]} for x in most_common_words]
+
+    return Response(r)
 
 
 @api_view()

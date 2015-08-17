@@ -1,5 +1,16 @@
 from django.db import models
 
+# See stopwords_to_tuple.py to convert stopwords.txt to this constant.
+STOPWORDS = ('dus', 'zo', 'zoal', 'zoals', 'ove', 'boven', 'bovendien', 'bovenal', 'volgens',
+             'na', 'nadat', 'tegen', 'al', 'ook', 'altijd', 'iemand', 'waar', 'waardat',
+             'waarna', 'elk', 'elke', 'rond', 'omdat', 'want', 'voordat', 'voordien', 'voor',
+             'achter', 'tussen', 'voorbij', 'door', 'met', 'doordat', 'zeker', 'zekere', 'neer',
+             'ergens', 'anders', 'ander', 'andere', 'voldoende', 'iedereen', 'ieder', 'iedere',
+             'behalve', 'weinig', 'vroeger', 'vroegere', 'vervolgens', 'volgens', 'gegeven',
+             'dat', 'zich', 'zichzelf', 'jezelf', 'hoewel', 'mezelf', 'ondanks', 'desondanks',
+             'onmiddellijk', 'laatst', 'laatste', 'voornamelijk', 'niettemin', 'sinds', 'soms',
+             'hen', 'hun', 'hem', 'haar', 'jou', 'jouw')
+
 
 class EpuIndexScore(models.Model):
     date = models.DateField(unique=True)
@@ -42,6 +53,11 @@ class Article(models.Model):
     cleaned_text = models.TextField()
     published_at = models.DateTimeField()
     epu_score = models.DecimalField(max_digits=9, decimal_places=5, blank=True, null=True)
+
+    def cleaned_text_without_stopwords(self):
+        word_list = self.cleaned_text.lower().split()
+
+        return ' '.join([i for i in word_list if i not in STOPWORDS])
 
     class Meta:
         unique_together = ("news_journal", "published_at", "title")
