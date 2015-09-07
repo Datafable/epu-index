@@ -3,8 +3,9 @@
     <head>
         <meta charset="utf-8">
         <title>Economic policy uncertainty index</title>
-        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/c3/0.4.10/c3.css">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
     </head>
     <body>
         <div class="main">
@@ -13,7 +14,16 @@
                     <h1>Economic Policy Uncertainty (EPU)</h1>
                     
                     <h4>EPU trend <span id="selected-year"></span></h4>
-                    <p><a href="#" id="download">Download EPU data for current selection</a> | <a href="https://epu-index.herokuapp.com/api/epu/?format=csv">Download all EPU data</a></p>
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Download data
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <li><a href="#" id="download">Download EPU data for current selection</a></li>
+                            <li><a href="https://epu-index.herokuapp.com/api/epu/?format=csv">Download all EPU data</a></li>
+                        </ul>
+                    </div>
                     <div id="detailed-chart" style="height: 300px"></div>
                     <div id="overview-chart" style="height: 100px"></div>
                     
