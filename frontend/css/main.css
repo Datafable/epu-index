@@ -78,5 +78,6 @@ blockquote {
     stroke: black!important;
 }
 .c3-xgrid-line line {
+    stroke-width: 1.5px;
     stroke: black!important;
 }
