@@ -2,9 +2,7 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 
-CUTOFF = -0.15
-
-from epu_index.models import EpuIndexScore, JournalsScraped, Article
+from epu_index.models import EpuIndexScore, JournalsScraped, Article, ARTICLES_APU_CUTOFF
 
 
 class Command(BaseCommand):
@@ -24,11 +22,11 @@ class Command(BaseCommand):
         number_of_positive_articles = Article.objects.filter(published_at__year=day.year,
                                                              published_at__month=day.month,
                                                              published_at__day=day.day,
-                                                             epu_score__gte=CUTOFF).count()
+                                                             epu_score__gte=ARTICLES_APU_CUTOFF).count()
 
         if number_of_journals > 0:
             self.stdout.write("Number of journals scraped: {nj}".format(nj=number_of_journals))
-            self.stdout.write("Number of articles above {cutoff}: {na}".format(cutoff=CUTOFF,
+            self.stdout.write("Number of articles above {cutoff}: {na}".format(cutoff=ARTICLES_APU_CUTOFF,
                                                                                na=number_of_positive_articles))
 
             day_epu_score = number_of_positive_articles / float(number_of_journals)

@@ -13,7 +13,7 @@ from rest_framework.settings import api_settings
 
 from rest_framework_csv import renderers as r
 
-from .models import EpuIndexScore, Article
+from .models import EpuIndexScore, Article, ARTICLES_APU_CUTOFF
 from .serializers import EpuSerializer
 
 
@@ -57,7 +57,7 @@ def term_frequency(request):
     max_words = int(request.GET.get('max_words', 50))
 
     # We start with only an article with positive EPU...
-    articles = Article.objects.filter(epu_score__gt=0)
+    articles = Article.objects.filter(epu_score__gt=ARTICLES_APU_CUTOFF)
 
     # ...if start_date is provided, we refine...
     if start_date:
