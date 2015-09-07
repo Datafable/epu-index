@@ -1,15 +1,32 @@
 from django.db import models
 
 # See stopwords_to_tuple.py to convert stopwords.txt to this constant.
-STOPWORDS = ('dus', 'zo', 'zoal', 'zoals', 'ove', 'boven', 'bovendien', 'bovenal', 'volgens',
-             'na', 'nadat', 'tegen', 'al', 'ook', 'altijd', 'iemand', 'waar', 'waardat',
-             'waarna', 'elk', 'elke', 'rond', 'omdat', 'want', 'voordat', 'voordien', 'voor',
-             'achter', 'tussen', 'voorbij', 'door', 'met', 'doordat', 'zeker', 'zekere', 'neer',
-             'ergens', 'anders', 'ander', 'andere', 'voldoende', 'iedereen', 'ieder', 'iedere',
-             'behalve', 'weinig', 'vroeger', 'vroegere', 'vervolgens', 'volgens', 'gegeven',
-             'dat', 'zich', 'zichzelf', 'jezelf', 'hoewel', 'mezelf', 'ondanks', 'desondanks',
-             'onmiddellijk', 'laatst', 'laatste', 'voornamelijk', 'niettemin', 'sinds', 'soms',
-             'hen', 'hun', 'hem', 'haar', 'jou', 'jouw')
+STOPWORDS = ('aan', 'aangezien', 'achter', 'af', 'al', 'al', 'alle', 'allebei', 'alleen', 'allen', 'als', 'altijd',
+             'ander', 'andere', 'anderen', 'anders', 'anders', 'beetje', 'behalve', 'ben', 'bepaald', 'bij', 'boven',
+             'boven', 'bovenal', 'bovendien', 'bovengenoemd', 'bovenstaand', 'bovenvermeld', 'buiten', 'daar',
+             'daardoor', 'daarin', 'daarna', 'daarnet', 'daarom', 'dag', 'dan', 'dat', 'de', 'deel', 'deels', 'den',
+             'der', 'desondanks', 'deze', 'dicht', 'dichtbij', 'die', 'dit', 'door', 'doordat', 'dus', 'echter', 'een',
+             'eenmalig', 'eens', 'eerder', 'eerst', 'eerste', 'elk', 'elke', 'en', 'enige', 'enkele', 'enz', 'er',
+             'erboven', 'erdoor', 'ergens', 'erin', 'ernaast', 'eronder', 'etc', 'even', 'eveneens', 'evenwel', 'gauw',
+             'gedurende', 'gegeven', 'gekund', 'geleden', 'geweest', 'gisteren', 'haar', 'haarzelf', 'had', 'hadden',
+             'heb', 'hebben', 'heeft', 'heel', 'hem', 'hemzelf', 'hen', 'het', 'hier', 'hierdoor', 'hierin', 'hij',
+             'hoe', 'hoewel', 'hoogstwaarschijnlijk', 'hun', 'ieder', 'iedere', 'iedereen', 'iemand', 'iets', 'ik',
+             'in', 'inzake', 'is', 'je', 'jezelf', 'jij', 'jou', 'jouw', 'jullie', 'kan', 'kon', 'konden', 'kunnen',
+             'kunt', 'laatst', 'laatste', 'liever', 'maar', 'mag', 'me', 'mee', 'meer', 'met', 'mezelf', 'mij', 'mijn',
+             'minder', 'misschien', 'moest', 'moesten', 'moet', 'moeten', 'mogelijk', 'mogelijks', 'mogen', 'morgen',
+             'na', 'naar', 'naast', 'nabij', 'nadat', 'namelijk', 'neer', 'nergens', 'niemand', 'niet', 'niets',
+             'niettemin', 'nieuw', 'noch', 'nodig', 'nog', 'nogal', 'nu', 'of', 'om', 'omdat', 'omstreeks', 'omtrent',
+             'omver', 'ondanks', 'onder', 'ondertussen', 'ongeveer', 'onmiddellijk', 'ons', 'onszelf',
+             'onwaarschijnlijk', 'onze', 'ook', 'op', 'opnieuw', 'opzij', 'over', 'over', 'overigens', 'pas', 'precies',
+             'reeds', 'rond', 'rondom', 'sedert', 'sinds', 'sindsdien', 'slechts', 'sommige', 'sommigen', 'soms',
+             'steeds', 'tamelijk', 'te', 'tegen', 'ten', 'tenzij', 'ter', 'terwijl', 'thans', 'tijdens', 'toch', 'toen',
+             'toenmalig', 'tot', 'totdat', 'tussen', 'uit', 'uitgezonderd', 'vaak', 'van', 'van', 'vanaf', 'vandaag',
+             'vandaan', 'veel', 'ver', 'veraf', 'vervolgens', 'voldoende', 'volgende', 'volgens', 'voor', 'voor',
+             'vooral', 'voorbij', 'voordat', 'voordien', 'voorheen', 'voornamelijk', 'voorop', 'vooruit', 'vrij',
+             'vroeger', 'vroegere', 'waar', 'waardat', 'waarna', 'waarom', 'waarschijnlijk', 'wanneer', 'want', 'waren',
+             'was', 'wat', 'we', 'weinig', 'wel', 'welk', 'welke', 'wie', 'wiens', 'wij', 'wil', 'wilde', 'wilden',
+             'willen', 'wilt', 'word', 'worden', 'wordt', 'wou', 'ze', 'zeer', 'zeker', 'zekere', 'zich', 'zichzelf',
+             'zij', 'zijn', 'zo', 'zoal', 'zoals', 'zodat', 'zonder', 'zou', 'zouden')
 
 ARTICLES_APU_CUTOFF = -0.15
 
