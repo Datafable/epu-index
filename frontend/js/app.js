@@ -238,18 +238,17 @@ var app = (function() {
         wordCloudElement.html("");
 
         // Create new word cloud
-        // d3.json("https://epu-index.herokuapp.com/api/.../?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
-        d3.json("http://bartaelterman.cartodb.com/api/v2/sql?q=SELECT text, count FROM term_frequencies limit 60", function(d) {
-            var wordsAndCounts = d.rows.map(function(entry) {
+        d3.json("https://epu-index.herokuapp.com/api/term-frequency/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
+            var wordsAndCounts = d.map(function(entry) {
                     return  { 
-                        inputText: entry.text,
+                        inputText: entry.word,
                         inputCount: entry.count
                     };
                 }),
                 width = parseInt(wordCloudElement.style("width"),10), // Width of parent div
                 height = parseInt(wordCloudElement.style("height"),10), // Height of parent div
                 minFontSize = 10,
-                maxFontSize = 60,
+                maxFontSize = 40,
                 fontSize = d3.scale.linear() // Function to translate word count to font-size
                     .domain([
                         d3.min(wordsAndCounts, function(d) {
@@ -262,7 +261,7 @@ var app = (function() {
                     .range([minFontSize,maxFontSize]),
                 fontFamily = "Arial, Helvetica, sans-serif",
                 textColor = wordCloudElement.style("color"), // Text color of parent div
-                angles = [-90, -45, 0]; // Angles at which words can appear
+                angles = [-90, 0]; // Angles at which words can appear
 
             var draw = function(wordCloudData) {
                 wordCloudElement.append("svg")
