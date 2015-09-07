@@ -272,7 +272,7 @@ var app = (function() {
                     .selectAll("text")
                     .data(wordCloudData)
                     .enter().append("text")
-                    .style("font-family", d.font)
+                    .style("font-family", fontFamily)
                     .style("font-size", function(d) { return d.size + "px"; })
                     .attr("text-anchor", "middle")
                     .attr("transform", function(d) {
