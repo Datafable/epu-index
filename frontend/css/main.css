@@ -81,3 +81,15 @@ blockquote {
     stroke-width: 1.5px;
     stroke: black!important;
 }
+#download-data {
+    text-align: right;
+    padding: 6px 0;
+    }
+    #download-data a {
+        border: 1px solid #5e6568;
+        border-radius: 4px;
+        padding: 6px 12px;
+        }
+        #download-data a:hover {
+            background-color: #e6e6e6;
+        }
