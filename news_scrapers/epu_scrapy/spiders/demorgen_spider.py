@@ -1,13 +1,14 @@
 import json
 import os
-from scrapy.contrib.spiders import CrawlSpider, Rule
+import re
+from scrapy import Spider, FormRequest, Request
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.exceptions import CloseSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
 from time import strptime
 
-def set_start_urls(settings):
+def set_start_url(settings):
     """
     Based on the dates given in the settings file, construct the start urls for the spider
     """
@@ -28,20 +29,56 @@ def set_start_urls(settings):
         start_str = '{0}-{1}-{2}'.format(start.day, start.month, start.year)
         end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
         end_str = '{0}-{1}-{2}'.format(end.day, end.month, end.year)
-        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, start_str, end_str)]
-    return start_urls
+        start_url = 'http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, start_str, end_str)
+    return start_url
 
 
-class DemorgenSpider(CrawlSpider):
+class DemorgenSpider(Spider):
     name = 'demorgen' # name of the spider, to be used when running from command line
-    allowed_domains = ['www.demorgen.be']
+    allowed_domains = ['demorgen.be']
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
-    start_urls = set_start_urls(settings)
-    rules = (
-        Rule(SgmlLinkExtractor(allow=('zoek\/.*LAST_WEEK.*page=[0-9]+'))),
-        Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
-             callback='parse_article'),
-    ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
+    start_urls = ['http://www.demorgen.be'] # login form. Used as iframe in main web site
+    # rules = (
+    #     Rule(SgmlLinkExtractor(allow=('zoek\/.*LAST_WEEK.*page=[0-9]+'))),
+    #     Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
+    #          callback='parse_article'),
+    # ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
+
+    def parse(self, response):
+        """
+        Overwrites Spiders parse method. Fill in log in details in log in form and submit.
+        :return: FormRequest
+        """
+        return Request(
+            'https://caps.demorgen.be/service/web/authentication?client_id=caps-dm-1141',
+            self.go_to_search_site,
+            body=json.dumps({'email': self.settings['username'], 'password': self.settings['password']}),
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+
+    def go_to_search_site(self, response):
+        """
+        After login attempt, construct url to search page and start scraping that page by returning a Request object.
+        Note that we don't check the response status here. Scrapy only proceeds when status is 200. If status of
+        the response is 400 (probably due to invalid credentials) or 415 (missing header Content-Type: application/json)
+        the spider will not reach this method.
+        :return: Scrapy.Request object that will be parsed by parse_search_results.
+        """
+        url = set_start_url(self.settings)
+        return Request(url, callback=self.parse_search_results)
+
+    def parse_search_results(self, response):
+        subseq_pages = response.xpath('//a/@href').extract()
+        next_article_links = response.xpath("""//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]
+            /descendant-or-self::*/a/@href
+        """).extract()
+        for url in subseq_pages:
+            if re.search('zoek\/.*LAST_WEEK.*page=[0-9]+', url):
+                yield Request(url, self.parse_search_results)
+        for url in next_article_links:
+            if re.search('www.demorgen.be/[^/]+/[^/]+', url):
+                yield Request(url, self.parse_article)
 
     def parse_article(self, response):
         # search for article title
