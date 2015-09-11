@@ -261,7 +261,7 @@ var app = (function() {
                     .range([minFontSize,maxFontSize]),
                 fontFamily = "Verdana, Geneva, sans-serif",
                 textColor = ["#53798B", "#86a7b7", "#3b5663", "black"], // Text color of parent div
-                angles = [-90, 0]; // Angles at which words can appear
+                angles = [0]; // Angles at which words can appear
 
             var draw = function(wordCloudData) {
                 wordCloudElement.append("svg")
