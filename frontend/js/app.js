@@ -259,8 +259,8 @@ var app = (function() {
                         })
                     ])
                     .range([minFontSize,maxFontSize]),
-                fontFamily = "Arial, Helvetica, sans-serif",
-                textColor = wordCloudElement.style("color"), // Text color of parent div
+                fontFamily = "Verdana, Geneva, sans-serif",
+                textColor = ["#53798B", "#86a7b7", "#3b5663", "black"], // Text color of parent div
                 angles = [-90, 0]; // Angles at which words can appear
 
             var draw = function(wordCloudData) {
@@ -279,7 +279,7 @@ var app = (function() {
                         return "translate(" + [d.x, d.y] + ") rotate(" + d.rotate + ")";
                     })
                     .text(function(d) { return d.text; })
-                    .style("fill",textColor);
+                    .style("fill",function(d) {return textColor[Math.floor(Math.random() * textColor.length)]; });
             };
 
             d3.layout.cloud()
