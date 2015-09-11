@@ -6,6 +6,8 @@ var app = (function() {
         articleElement = d3.select("#article"),
         downloadElement = d3.select("#download"),
         wordCloudElement = d3.select("#word-cloud");
+    wordCloudElement.style("height", "400px")
+        .style("width", "600px");
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
@@ -240,10 +242,9 @@ var app = (function() {
         // Create new word cloud
         d3.json("https://epu-index.herokuapp.com/api/term-frequency/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
             var wordsAndCounts = d.map(function(entry) {
-                    return  { 
-                        inputText: entry.word,
-                        inputCount: entry.count
-                    };
+                    return  [
+                        entry.word, entry.count
+                    ];
                 }),
                 width = parseInt(wordCloudElement.style("width"),10), // Width of parent div
                 height = parseInt(wordCloudElement.style("height"),10), // Height of parent div
@@ -269,36 +270,28 @@ var app = (function() {
                 ],
                 angles = [0]; // Angles at which words can appear
 
-            var draw = function(wordCloudData) {
-                wordCloudElement.append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .append("g")
-                    .attr("transform", "translate(" + [width / 2, height / 2] + ")") // Centre point
-                    .selectAll("text")
-                    .data(wordCloudData)
-                    .enter().append("text")
-                    .style("font-family", fontFamily)
-                    .style("font-size", function(d) { return d.size + "px"; })
-                    //.style("font-weight", "bold")
-                    .attr("text-anchor", "middle")
-                    .attr("transform", function(d) {
-                        return "translate(" + [d.x, d.y] + ") rotate(" + d.rotate + ")";
-                    })
-                    .text(function(d) { return d.text; })
-                    .style("fill",function(d) {return textColor[Math.floor(Math.random() * textColor.length)]; });
-            };
+            console.log(wordsAndCounts);
+            WordCloud("word-cloud", {
+                list: wordsAndCounts,
+                fontFamily: fontFamily,
+                minSize: 10,
+                gridSize: 500,
+                //weightFactor: 0.4,
+                clearCanvas: true,
+                color: function(d) {return textColor[Math.floor(Math.random() * textColor.length)]; }
+            });
 
-            d3.layout.cloud()
-                .size([width, height])
-                .words(wordsAndCounts)
-                .text(function(d) { return d.inputText.toLowerCase(); }) // Uniformize to lowercase
-                .rotate(function() { return angles[Math.floor(Math.random() * angles.length)]; }) // Select one of the angles at random
-                .font(fontFamily) // Define here for better display positioning calculation
-                .fontSize(function(d) { return fontSize(d.inputCount); }) // Translate count to font-size
-                .padding(2) // Set padding to font-size / 10
-                .on("end", draw) // Call the draw function with the word cloud data
-                .start();
+
+            //d3.layout.cloud()
+            //    .size([width, height])
+            //    .words(wordsAndCounts)
+            //    .text(function(d) { return d.inputText.toLowerCase(); }) // Uniformize to lowercase
+            //    .rotate(function() { return angles[Math.floor(Math.random() * angles.length)]; }) // Select one of the angles at random
+            //    .font(fontFamily) // Define here for better display positioning calculation
+            //    .fontSize(function(d) { return fontSize(d.inputCount); }) // Translate count to font-size
+            //    .padding(2) // Set padding to font-size / 10
+            //    .on("end", draw) // Call the draw function with the word cloud data
+            //    .start();
         });
     };
 
