@@ -38,7 +38,7 @@ class DemorgenSpider(CrawlSpider):
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
     rules = (
-        Rule(SgmlLinkExtractor(allow=('zoek\/.*LAST_WEEK.*page=[0-9]+'))),
+        Rule(SgmlLinkExtractor(allow=('zoek.*page=[0-9]+'))),
         Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
              callback='parse_article'),
     ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
@@ -52,10 +52,17 @@ class DemorgenSpider(CrawlSpider):
             title = ''
 
         # search for article published date
-        datetime_str_parts = response.xpath('//article/div/footer/descendant::*/time/@datetime').extract()
+        datetime_str_parts = response.xpath('//article/div/footer/descendant-or-self::*/time/@datetime').extract()
         if len(datetime_str_parts) > 0:
-            dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
-            datetime_str = dt.isoformat()
+            try:
+                dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
+                datetime_str = dt.isoformat()
+            except ValueError:
+                try:
+                    dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d %H:%M')[0:6]) # no comma after day
+                    datetime_str = dt.isoformat()
+                except ValueError:
+                    datetime_str = ''
         else:
             datetime_str = ''
 
