@@ -11,10 +11,29 @@ import pandas as pd
 
 class EpuScrapyPipeline(object):
     def open_spider(self, spider):
+        import django
+        django.setup()
         settingsfile = os.path.join(os.path.dirname(__file__), 'crawling_settings.json')
         self.settings = json.load(open(settingsfile))
         self.journals = {j.spider_name: j for j in NewsJournal.objects.all()}
         self.word_weights = self._read_model_file(os.path.join(os.path.dirname(settingsfile), self.settings['model_file']))
+        self.REPLACE_CHARS = (
+            (u'ë', u'e'),
+            (u'ö', u'o'),
+            (u'ü', u'u'),
+            (u'ï', u'i'),
+            (u'é', u'e'),
+            (u'è', u'e'),
+            (u'à', u'a'),
+            (u'á', u'a'),
+            (u'í', u'i'),
+            (u'ì', u'i'),
+            (u'ó', u'o'),
+            (u'ò', u'o'),
+            (u'ú', u'u'),
+            (u'ù', u'u'),
+            (u'ñ', u'n')
+        )
 
 
     def close_spider(self, spider):
@@ -43,6 +62,8 @@ class EpuScrapyPipeline(object):
         return item
 
     def _clean_text(self, intext):
+        for char_tuple in self.REPLACE_CHARS:
+            intext = intext.replace(char_tuple[0], char_tuple[1])
         return ' '.join(re.findall('\w+', intext, flags=re.UNICODE)).encode('utf-8')
 
 
