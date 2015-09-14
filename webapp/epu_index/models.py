@@ -41,7 +41,7 @@ class JournalsScraped(models.Model):
 class Article(models.Model):
     news_journal = models.ForeignKey(NewsJournal, null=True)
     intro = models.TextField(blank=True, null=True)
-    url = models.URLField(blank=True, null=True)
+    url = models.URLField(blank=True, null=True, unique=True)
     title = models.CharField(max_length=255)
     text = models.TextField()
     cleaned_text = models.TextField()
@@ -52,9 +52,6 @@ class Article(models.Model):
         word_list = self.cleaned_text.lower().split()
 
         return ' '.join([i for i in word_list if i not in STOPWORDS])
-
-    class Meta:
-        unique_together = ("news_journal", "published_at", "title")
 
     def __unicode__(self):
         return self.title
