@@ -123,4 +123,12 @@ STATICFILES_DIRS = (
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Configuration for the check_failed_scrapers command
+# Please also check Django's email configuration is correct
+CONSECUTIVE_DAYS_WITHOUT_ARTICLES = 7  # After N days without returning an article, an alert will be triggered.
+ALERT_EMAIL_SUBJECT = "[EPU Webapp] Please check spider status."
+ALERT_EMAIL_FROM = 'niconoe@gmail.com'
+ALERT_EMAIL_TO = ['nicolas@niconoe.eu']
+
+
 from settings_local import *

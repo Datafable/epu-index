@@ -4,3 +4,4 @@ _crawling/*
 *.pyc
 staticfiles
 .DS_Store
+webapp/webapp/settings_local.py
