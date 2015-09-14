@@ -247,8 +247,8 @@ var app = (function() {
                 }),
                 width = parseInt(wordCloudElement.style("width"),10), // Width of parent div
                 height = parseInt(wordCloudElement.style("height"),10), // Height of parent div
-                minFontSize = 10,
-                maxFontSize = 40,
+                minFontSize = 15,
+                maxFontSize = 50,
                 fontSize = d3.scale.linear() // Function to translate word count to font-size
                     .domain([
                         d3.min(wordsAndCounts, function(d) {
@@ -259,9 +259,15 @@ var app = (function() {
                         })
                     ])
                     .range([minFontSize,maxFontSize]),
-                fontFamily = "Verdana, Geneva, sans-serif",
-                textColor = ["#53798B", "#86a7b7", "#3b5663", "black"], // Text color of parent div
-                angles = [-90, 0]; // Angles at which words can appear
+                fontFamily = "Oswald, Verdana, Geneva, sans-serif",
+                textColor = ["#53798B", // title blue
+                    "#7D022B", // dark UA red
+                    "#3b5663", // UA red
+                    "#FF9900", // amazon orange
+                    "#FBB65E", // amazon yellow
+                    "black"
+                ],
+                angles = [0]; // Angles at which words can appear
 
             var draw = function(wordCloudData) {
                 wordCloudElement.append("svg")
@@ -274,6 +280,7 @@ var app = (function() {
                     .enter().append("text")
                     .style("font-family", fontFamily)
                     .style("font-size", function(d) { return d.size + "px"; })
+                    //.style("font-weight", "bold")
                     .attr("text-anchor", "middle")
                     .attr("transform", function(d) {
                         return "translate(" + [d.x, d.y] + ") rotate(" + d.rotate + ")";
@@ -285,11 +292,11 @@ var app = (function() {
             d3.layout.cloud()
                 .size([width, height])
                 .words(wordsAndCounts)
-                .text(function(d) { return d.inputText.toUpperCase(); }) // Uniformize to uppercase
+                .text(function(d) { return d.inputText.toLowerCase(); }) // Uniformize to lowercase
                 .rotate(function() { return angles[Math.floor(Math.random() * angles.length)]; }) // Select one of the angles at random
                 .font(fontFamily) // Define here for better display positioning calculation
                 .fontSize(function(d) { return fontSize(d.inputCount); }) // Translate count to font-size
-                .padding(function(d) { return fontSize(d.inputCount) / 10; }) // Set padding to font-size / 10
+                .padding(2) // Set padding to font-size / 10
                 .on("end", draw) // Call the draw function with the word cloud data
                 .start();
         });
