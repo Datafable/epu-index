@@ -10,3 +10,5 @@ date1, "end": date2}` where dates should be in `yyyy-mm-dd` format. Additionally
 will cause the scraper to determine the current date and search for articles published on the day before that.
 * `username`: The username used for the Standaard and De Tijd subscriptions.
 * `password`: The password used for the Standaard and De Tijd subscriptions.
+* `model_file`: The path to the file containing the weights for words as defined by the classification model. This path
+should be relative to the settings file itself.
