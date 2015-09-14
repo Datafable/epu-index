@@ -34,6 +34,9 @@ class JournalsScraped(models.Model):
     journal = models.ForeignKey(NewsJournal)
     date = models.DateField()
 
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.date, self.journal)
+
     class Meta:
         unique_together = ('journal', 'date')
 
