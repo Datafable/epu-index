@@ -26,7 +26,7 @@ def set_start_urls(settings):
         start_str = '{0}/{1}/{2}'.format(start.day, start.month, start.year)
         end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
         end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year)
-    start_urls = ['http://www.nieuwsblad.be/zoeken?keyword={0}&datestart={1}&dateend={2}'.format(term, start_str, end_str)]
+    start_urls = ['http://www.nieuwsblad.be/zoeken/?keyword={0}&datestart={1}&dateend={2}'.format(term, start_str, end_str)]
     return start_urls
 
 
@@ -36,7 +36,7 @@ class NieuwsbladSpider(CrawlSpider):
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
     rules = (
-        Rule(LinkExtractor(allow=('zoeken.*page=[0-9]+'))),
+        Rule(LinkExtractor(allow=('zoeken[?/].*page=[0-9]+'))),
         Rule(LinkExtractor(allow=('\/cnt\/')), callback='parse_article'),
     ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
 

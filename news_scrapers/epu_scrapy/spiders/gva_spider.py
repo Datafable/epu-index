@@ -36,7 +36,7 @@ class GazetVanAntwerpenSpider(CrawlSpider):
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
     rules = (
-        Rule(LinkExtractor(allow=('\/zoeken\/.*page=[0-9]+'))),
+        Rule(LinkExtractor(allow=('\/zoeken[?/].*page=[0-9]+'))),
         Rule(LinkExtractor(allow=('\/cnt\/')), callback='parse_article'),
     ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
 
