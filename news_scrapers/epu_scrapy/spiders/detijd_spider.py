@@ -82,7 +82,6 @@ class DeTijdSpider(Spider):
             /a/@href
             ''').extract()
         if len(next_link) > 0:
-            print 'should parse next page'
             next_link = next_link[0].encode('utf-8')
             yield Request(next_link, callback=self.parse_search_results)
         else:
