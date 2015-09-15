@@ -6,7 +6,7 @@ var app = (function() {
         articleElement = d3.select("#article"),
         downloadElement = d3.select("#download"),
         wordCloudElement = d3.select("#word-cloud"),
-        DOMAIN = "https://epu-index.herokuapp.com";
+        DOMAIN = "http://188.166.74.135";
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
