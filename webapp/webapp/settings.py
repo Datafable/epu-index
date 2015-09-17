@@ -44,7 +44,6 @@ INSTALLED_APPS = (
     'corsheaders',
     'epu_index',
     'django_extensions',
-    'debug_toolbar'
 )
 
 MIDDLEWARE_CLASSES = (
