@@ -59,10 +59,8 @@ class Article(models.Model):
         # If return value is in cache, we just return it
         cached_results = cache.get(self.ctws_cache_key())
         if cached_results:
-            print "we return from cache"
             return cached_results
         else:
-            print "not in cache, processing..."
             # Otherwise, we process, store it in cache and return it
             word_list = self.cleaned_text.lower().split()
             r = [i for i in word_list if i not in STOPWORDS]
