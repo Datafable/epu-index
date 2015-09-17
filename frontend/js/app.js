@@ -5,7 +5,8 @@ var app = (function() {
         selectedDateElement = d3.select("#selected-date"),
         articleElement = d3.select("#article"),
         downloadElement = d3.select("#download"),
-        wordCloudElement = d3.select("#word-cloud");
+        wordCloudElement = d3.select("#word-cloud"),
+        DOMAIN = "http://188.166.74.135";
         
     var overviewChart,          // C3 overview chart, showing all data
         detailedChart,          // C3 detailed chart, showing a year of data
@@ -45,7 +46,7 @@ var app = (function() {
         // Given a selectedDate (e.g. 2010-03-01), get dates 6 months before and after to cover one year and (re)load the detailed chart and download link
         var startDate = moment.utc(selectedDate).subtract(6,"months"), // 2009-09-01
             endDate = moment.utc(selectedDate).add(6,"months").subtract(1,"day"), // 2010-09-01 minus 1 day = 2010-08-31 = cover exactly one year
-            epuDataPerDay = "https://epu-index.herokuapp.com/api/epu/?start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
+            epuDataPerDay = DOMAIN + "/api/epu/?start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD");
 
         // Update download link
         downloadElement.attr("href", epuDataPerDay + "&format=csv");
@@ -80,7 +81,7 @@ var app = (function() {
     var loadDate = function(selectedDate) {
         // Given a selectedDate (e.g. 2010-03-21), show the highest ranking article and word cloud for that day
         var date = moment.utc(selectedDate),
-            highestRankingArticle = "https://epu-index.herokuapp.com/api/highest-ranking-article/?format=json&date=" + date.format("YYYY-MM-DD");
+            highestRankingArticle = DOMAIN + "/api/highest-ranking-article/?format=json&date=" + date.format("YYYY-MM-DD");
 
         // Update the selected date in the title
         selectedDateElement.text("on " + date.format("dddd, MMMM Do YYYY"));
@@ -238,7 +239,7 @@ var app = (function() {
         wordCloudElement.html("");
 
         // Create new word cloud
-        d3.json("https://epu-index.herokuapp.com/api/term-frequency/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
+        d3.json(DOMAIN + "/api/term-frequency/?format=json&start_date=" + startDate.format("YYYY-MM-DD") + "&end_date=" + endDate.format("YYYY-MM-DD"), function(d) {
             var wordsAndCounts = d.map(function(entry) {
                     return  { 
                         inputText: entry.word,
@@ -304,7 +305,7 @@ var app = (function() {
 
 
     // Get EPU data per month, derive date range and create charts
-    d3.json("https://epu-index.herokuapp.com/api/epu-per-month/?format=json", function(d) {
+    d3.json(DOMAIN + "/api/epu-per-month/?format=json", function(d) {
         // Set monthsExtent to be used for ticks, e.g [2001-01-01, 2008-12-01]
         // Even though the 1st of month is hardcoded, all downstream functions can work with other dates as well, e.g. createTickSeries() and loadYear().
         monthsExtent = d3.extent(d, function(entry) { return new Date(entry.month + "-01"); });

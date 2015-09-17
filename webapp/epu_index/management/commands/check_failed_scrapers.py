@@ -20,6 +20,7 @@ class Command(BaseCommand):
         for scraper in scrapers:
             n = Article.objects.filter(news_journal=scraper, published_at__gte=start_time).count()
             if n == 0:
+                print 'spider {s} failed'.format(s=scraper.spider_name)
                 msg = ("Spider {s} failed for {n} consecutive days. Please check if this is a "
                        "normal situation or if a spider failed.").format(s=scraper.spider_name,
                                                                          n=consecutive_days)

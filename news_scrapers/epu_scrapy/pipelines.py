@@ -45,7 +45,7 @@ class EpuScrapyPipeline(object):
                 scraped_date = date_from + datetime.timedelta(days=d)
                 self._log_successful_crawl(scraped_date, spider)
         else:
-            scraped_date = parser.parse(self.settings['period'])
+            scraped_date = datetime.date.today() - datetime.timedelta(days=1)
             self._log_successful_crawl(scraped_date, spider)
 
     def process_item(self, item, spider):

@@ -39,14 +39,14 @@ Nieuwsblad*. The spiders for *De Redactie* and *Het Laatste Nieuws* needed to ci
 and/or client-side JavaScript code that loads content dynamically. *De Standaard* and *De Tijd* require authentication
 before we can scrape the websites contents.
 
-After scraping, the articles are written to a database. The Scrapy way to do this is by implementing a *pipeline*.
-Pipelines are defined in [`pipelines.py`](../pipelines.py) and generally they implement behaviour that is executed when
-a spiders yields an item. The database we will be writing to is the database of the epu index web application, which is
-built using the Django framework. As mentioned before, the items returned by the spiders are closely coupled to the
-Django models defined in the web application and hence, a simple [`item.save()`](../pipelines.py#L17) suffices to
-persist the item in the database of the web application.
-
-TODO: document how the article gets scored
+After scraping, the text of the articles is cleaned and the article is scored using the word weights given in the 
+[crawling_settings file](../crawling_settings.example.json). The articles and their respective scores are finally
+written to a database. The Scrapy way to do this is by implementing a *pipeline*. Pipelines are defined in
+[`pipelines.py`](../pipelines.py) and generally they implement behaviour that is executed when a spiders yields an item.
+The database we will be writing to is the database of the epu index web application, which is built using the Django
+framework. As mentioned before, the items returned by the spiders are closely coupled to the Django models defined in
+the web application and hence, a simple [`item.save()`](../pipelines.py#L17) suffices to persist the item in the
+database of the web application.
 
 ## De Morgen
 
@@ -57,7 +57,7 @@ The website of *De Morgen* does not allow to search for articles published the d
 `from` and `to` parameter in the search, but when both these dates are set to the date for yesterday, no results are
 returned (the `to` parameter is exclusive and hence prevents any article to match the query). Therefore, in contrast to
 the other spiders, the spider will include the articles of the current day. This means that some articles will be
-scraped two times, but these duplicates are prevented from entering the database. TODO: Implement this test: https://github.com/Datafable/epu-index/issues/54
+scraped two times, but these duplicates are prevented from entering the database.
 
 The *De Morgen* spider uses [Scrapy Rules](http://doc.scrapy.org/en/latest/topics/spiders.html?highlight=rule#crawling-rules)
  to crawl the search results. The first rule will follow
