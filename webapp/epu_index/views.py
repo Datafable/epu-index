@@ -39,7 +39,7 @@ def _filterdates_epu_queryset(start_date, end_date):
 
 # TO TEST:
 # - That only positive EPU articles are checked.
-# - That the default values works for the 3 parameters 
+# - That the default values works for the 3 parameters
 # - That the stopwords are avoided
 # - That all is converted to lowercase
 # - That the results are correct (form and format)
@@ -74,8 +74,7 @@ def term_frequency(request):
     cnt = Counter()
 
     for a in articles:
-        words = a.cleaned_text_without_stopwords().split()
-        for w in words:
+        for w in a.cleaned_text_without_stopwords():
             cnt[w] += 1
 
     most_common_words = cnt.most_common(max_words)

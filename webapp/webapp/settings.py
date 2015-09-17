@@ -43,7 +43,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'corsheaders',
     'epu_index',
-    'django_extensions'
+    'django_extensions',
+    'debug_toolbar'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -130,5 +131,15 @@ ALERT_EMAIL_SUBJECT = "[EPU Webapp] Please check spider status."
 ALERT_EMAIL_FROM = 'niconoe@gmail.com'
 ALERT_EMAIL_TO = ['nicolas@niconoe.eu']
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+        'OPTIONS': {
+            'MAX_ENTRIES': 50000
+        }
+
+    }
+}
 
 from settings_local import *
