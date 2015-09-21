@@ -43,3 +43,7 @@ in the [models file](webapp/epu_index/models.py#L7) but note that you will have 
 * **Stopwords**: the stopwords are documented as a tuple in the [models file](webapp/epu_index/models.py#L5). To generate
 such a tuple from a text file, you can use the stand alone script [stopwords_to_tuple.py](stopwords_to_tuple.py) and
 paste the result in the models file.
+* **Email notifications**: the application will check every day whether the scrapers are still working. This is done by
+checking for a number of consecutive days that no articles were returned. This cutoff is defined
+[here](webapp/webapp/settings.py#L124) and the email recipients should be added as the `ALERT_EMAIL_TO` setting in the
+same file. A number of other settings regarding the email alerts are set in production only (host, port, etc.).
