@@ -12,7 +12,7 @@ class TermFrequencyEndpointTests(TestCase):
     def setUp(self):
         Article.objects.create(published_at=timezone.now() - timezone.timedelta(days=1),
                                cleaned_text="New Sinds book published about Evolution nematodes weeke",
-                               epu_score=-0.13)
+                               epu_score=0.01)
 
         Article.objects.create(published_at=timezone.now(),
                                cleaned_text="is an article about de evolution EVOLUTION project",
@@ -26,7 +26,7 @@ class TermFrequencyEndpointTests(TestCase):
         # is under cutoff treshold
         Article.objects.create(published_at=timezone.now(),
                                cleaned_text="evolution nematodes weeke",
-                               epu_score=-0.16)
+                               epu_score=-0.01)
 
         call_command('calculate_all_words_per_day')
 
