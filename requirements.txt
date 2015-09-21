@@ -12,6 +12,7 @@ pandas==0.16.2
 psycopg2==2.6
 pyOpenSSL==0.15.1
 python-dateutil==2.4.2
+requests[security]
 Scrapy==0.24.6
 six==1.9.0
 static3==0.5.1

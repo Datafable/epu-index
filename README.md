@@ -18,4 +18,32 @@ are the [models](./webapp/epu_index/models.py). The data in the web application 
 framework](http://www.django-rest-framework.org/) to the front end.
 * [Front end](./frontend): The front end contains purely html and JavaScript and uses the [C3](http://c3js.org/) and
 [d3-cloud](https://github.com/jasondavies/d3-cloud) libraries. The data that is needed for generating the charts are
-fetched from the web appliations REST end points.
+fetched from the web applications REST end points.
+
+# Installation
+
+Check out the [installation documentation](installation.md).
+
+# Configuration
+
+The application allows for some configurable parameters. Most notably:
+
+* **Journal authentication settings**: these should be set in the [crawling settings
+file](news_scrapers/epu_scrapy/crawling_settings.example.json). See the [crawlers documentation](news_scrapers/epu_scrapy)
+for more information about those settings.
+* **Period and term to scrape**: these can also be found in the [crawling settings
+file](news_scrapers/epu_scrapy/crawling_settings.example.json).
+* **Model file**: this file should contain a comma separated list of words and their weights to be used to score an
+article. It should include a header `word,weight`. This setting in the [crawling settings
+file](news_scrapers/epu_scrapy/crawling_settings.example.json) points to the model file. Since this models file is used
+by the scraper, only newly scraped articles will be affected when a new file is used.
+* **EPU Score Cutoff**: this cutoff defines at which score articles are considered positive. You can alter this cutoff
+in the [models file](webapp/epu_index/models.py#L7) but note that you will have to re-run the custom django command
+[`calculate_daily_epu`](webapp/epu_index/management/commands) for all dates already in the database.
+* **Stopwords**: the stopwords are documented as a tuple in the [models file](webapp/epu_index/models.py#L5). To generate
+such a tuple from a text file, you can use the stand alone script [stopwords_to_tuple.py](stopwords_to_tuple.py) and
+paste the result in the models file.
+* **Email notifications**: the application will check every day whether the scrapers are still working. This is done by
+checking for a number of consecutive days that no articles were returned. This cutoff is defined
+[here](webapp/webapp/settings.py#L124) and the email recipients should be added as the `ALERT_EMAIL_TO` setting in the
+same file. A number of other settings regarding the email alerts are set in production only (host, port, etc.).
