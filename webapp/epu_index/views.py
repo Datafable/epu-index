@@ -13,7 +13,7 @@ from rest_framework.settings import api_settings
 
 from rest_framework_csv import renderers as r
 
-from .models import EpuIndexScore, Article, ARTICLES_APU_CUTOFF
+from .models import EpuIndexScore, Article, WordsPerDay
 from .serializers import EpuSerializer
 
 
@@ -37,45 +37,37 @@ def _filterdates_epu_queryset(start_date, end_date):
 
     return queryset
 
-# TO TEST:
-# - That only positive EPU articles are checked.
-# - That the default values works for the 3 parameters
-# - That the stopwords are avoided
-# - That all is converted to lowercase
-# - That the results are correct (form and format)
-
-# TO DOCUMENT IN TICKET:
-# - endpoint URL
-# - default parameters
 
 # See API discussion/description in #8.
 @api_view()
 @permission_classes((AllowAny, ))
 def term_frequency(request):
-    start_date = request.GET.get('start_date', None)
-    end_date = request.GET.get('end_date', None)
+    start_date_s = request.GET.get('start_date', None)
+    end_date_s = request.GET.get('end_date', None)
     max_words = int(request.GET.get('max_words', 50))
 
-    # We start with only an article with positive EPU...
-    articles = Article.objects.filter(epu_score__gt=ARTICLES_APU_CUTOFF)
+    if start_date_s:
+        start_date = _param_to_date(start_date_s)
+    else:
+        # Apparently, no data before 1994
+        start_date = _param_to_date('1990-01-01')
 
-    # ...if start_date is provided, we refine...
-    if start_date:
-        d = _param_to_date(start_date)
-        d_min = datetime.datetime.combine(d, datetime.time.min)
-        articles = articles.filter(published_at__gte=d_min)
-
-    # ... if end_date is provided, we refine further ...
-    if end_date:
-        d = _param_to_date(end_date)
-        d_max = datetime.datetime.combine(d, datetime.time.max)
-        articles = articles.filter(published_at__lte=d_max)
+    if end_date_s:
+        end_date = _param_to_date(end_date_s)
+    else:
+        end_date = datetime.date.today() + datetime.timedelta(days=2)
 
     cnt = Counter()
 
-    for a in articles:
-        for w in a.cleaned_text_without_stopwords():
-            cnt[w] += 1
+    d = start_date
+    delta = datetime.timedelta(days=1)
+    while d <= end_date:
+        wpd = WordsPerDay.objects.filter(date=d)
+
+        for w in wpd:
+            cnt[w.word] += w.frequency
+
+        d += delta
 
     most_common_words = cnt.most_common(max_words)
 
@@ -145,7 +137,8 @@ def epu_per_month(request):
 
 
 class EpuViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = EpuIndexScore.objects.all()  # TODO: shouldn't this be removed since we provide get_queryset?
+    # TODO: shouldn't this be removed since we provide get_queryset?
+    queryset = EpuIndexScore.objects.all()
     serializer_class = EpuSerializer
 
     renderer_classes = [r.CSVRenderer] + api_settings.DEFAULT_RENDERER_CLASSES

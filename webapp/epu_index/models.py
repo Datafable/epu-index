@@ -7,6 +7,37 @@ STOPWORDS = ('aan', 'aangezien', 'achter', 'af', 'al', 'al', 'alle', 'allebei', 
 ARTICLES_APU_CUTOFF = -0.15
 
 
+def remove_all_wordsperday_day(day):
+    WordsPerDay.objects.filter(date=day).delete()
+
+
+def create_wordsperday_from_articles(articles):
+    for a in articles:
+        for word in a.cleaned_text_without_stopwords():
+            try:
+                obj = WordsPerDay.objects.get(word=word, date=a.published_at.date())
+                obj.frequency = obj.frequency + 1
+            except WordsPerDay.DoesNotExist:
+                obj = WordsPerDay(word=word, date=a.published_at.date(), frequency=1)
+            obj.save()
+
+
+class WordsPerDay(models.Model):
+    """Used to keep frequency of each word for a specific day.
+
+    This allows good performance for the term frequency endpoint in case of many
+    days/articles.
+
+    Table is populated via a command.
+    """
+    word = models.CharField(max_length=255)
+    date = models.DateField(db_index=True)
+    frequency = models.IntegerField()
+
+    class Meta:
+        unique_together = ('word', 'date')
+
+
 class EpuIndexScore(models.Model):
     date = models.DateField(unique=True)
     number_of_articles = models.IntegerField()
@@ -68,7 +99,7 @@ class Article(models.Model):
             return r
 
     def save(self, *args, **kwargs):
-        if self.pk: # We're updating, let's invalidate the possible cache
+        if self.pk:  # We're updating, let's invalidate the possible cache
             cache.delete(self.ctws_cache_key())
 
         super(Article, self).save(*args, **kwargs)

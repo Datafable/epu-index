@@ -3,6 +3,7 @@ import json
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.utils import timezone
+from django.core.management import call_command
 
 from .models import Article
 
@@ -10,7 +11,7 @@ from .models import Article
 class TermFrequencyEndpointTests(TestCase):
     def setUp(self):
         Article.objects.create(published_at=timezone.now() - timezone.timedelta(days=1),
-                               cleaned_text="New Sinds book published about Evolution nematodes week",
+                               cleaned_text="New Sinds book published about Evolution nematodes weeke",
                                epu_score=-0.13)
 
         Article.objects.create(published_at=timezone.now(),
@@ -24,8 +25,10 @@ class TermFrequencyEndpointTests(TestCase):
         # We also create an EPU article that should never appear (per spec!) because its EPU score
         # is under cutoff treshold
         Article.objects.create(published_at=timezone.now(),
-                               cleaned_text="evolution nematodes week",
+                               cleaned_text="evolution nematodes weeke",
                                epu_score=-0.16)
+
+        call_command('calculate_all_words_per_day')
 
     def test_dates(self):
         # Test articles are correctly filtered according to start_date/ end_date
@@ -108,7 +111,7 @@ class TermFrequencyEndpointTests(TestCase):
     def test_only_epu_positive_articles(self):
         response = self.client.get(reverse('epu-term-frequency'))
 
-        # Let's check if we have only 3 evolution, 1 nematodes and 1 week
+        # Let's check if we have only 3 evolution, 1 nematodes and 1 week1
         # (otherwise, the EPU negative article has been taken into account)
         evolution_r = next(x for x in json.loads(response.content) if x['word'] == 'evolution')
         self.assertEqual(evolution_r['count'], 3)
@@ -116,5 +119,5 @@ class TermFrequencyEndpointTests(TestCase):
         nematodes_r = next(x for x in json.loads(response.content) if x['word'] == 'nematodes')
         self.assertEqual(nematodes_r['count'], 1)
 
-        week_r = next(x for x in json.loads(response.content) if x['word'] == 'week')
+        week_r = next(x for x in json.loads(response.content) if x['word'] == 'weeke')
         self.assertEqual(week_r['count'], 1)
