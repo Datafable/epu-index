@@ -36,7 +36,7 @@ class Command(BaseCommand):
         next(iterrows)
 
         for row in iterrows:
-            d = datetime.datetime.strptime(row[0], "%d-%b-%Y").strftime("%Y-%m-%d")
+            d = datetime.datetime.strptime(row[0], "%m/%d/%Y").strftime("%Y-%m-%d")
 
             _, created = EpuIndexScore.objects.get_or_create(date=d,
                                                              number_of_articles=row[1],
