@@ -15,5 +15,7 @@ class Command(BaseCommand):
         articles = Article.objects.filter(epu_score__gt=ARTICLES_APU_CUTOFF)
 
         # First we have to truncate WordsPerDay
+        self.stdout.write("Truncate previous data...")
         WordsPerDay.objects.all().delete()
+        self.stdout.write("Calculate new word frequency. That may takes long.")
         create_wordsperday_from_articles(articles)
