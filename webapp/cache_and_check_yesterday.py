@@ -4,6 +4,8 @@ from datetime import date, timedelta
 # calculate daily epu index
 yesterday = date.today() - timedelta(days=1)
 os.system('python manage.py calculate_daily_epu {0}'.format(yesterday.isoformat()))
+os.system('python manage.py calculate_words_per_day {0}'.format(yesterday.isoformat()))
+
 
 
 # check spiders
