@@ -18,21 +18,61 @@ class EpuScrapyPipeline(object):
         self.journals = {j.spider_name: j for j in NewsJournal.objects.all()}
         self.word_weights = self._read_model_file(os.path.join(os.path.dirname(settingsfile), self.settings['model_file']))
         self.REPLACE_CHARS = (
-            (u'ë', u'e'),
+            # o
             (u'ö', u'o'),
-            (u'ü', u'u'),
-            (u'ï', u'i'),
-            (u'é', u'e'),
-            (u'è', u'e'),
-            (u'à', u'a'),
-            (u'á', u'a'),
-            (u'í', u'i'),
-            (u'ì', u'i'),
+            (u'\xc3\xb6', u'o'), # ö
             (u'ó', u'o'),
+            (u'\xc3\xb3', u'o'), # ó
             (u'ò', u'o'),
+            (u'\xc3\xb2', u'o'), # ò
+
+            # i
+            (u'ï', u'i'),
+            (u'\xc3\xaf', u'i'), # ï
+            (u'í', u'i'),
+            (u'\xc3\xad', u'i'), # í
+            (u'ì', u'i'),
+            (u'\xc3\xac', u'i'), # ì
+
+            # e
+            (u'ë', u'e'),
+            (u'\xc3\xab', u'e'), # ë
+            (u'é', u'e'),
+            (u'\xc3\xa9', u'e'), # é
+            (u'è', u'e'),
+            (u'\xc3\xa8', u'e'), # è
+
+            # a
+            (u'à', u'a'),
+            (u'\xc3\xa0', u'a'), # à
+            (u'á', u'a'),
+            (u'\xc3\xa1', u'a'), # á
+            (u'â', u'a'),
+            (u'\xc3\xa2', u'a'), # â
+
+            # u
+            (u'ü', u'u'),
+            (u'\xc3\xbc', u'u'), # ü
             (u'ú', u'u'),
+            (u'\xc3\xba', u'u'), # ú
             (u'ù', u'u'),
-            (u'ñ', u'n')
+            (u'\xc3\xb9', u'u'), # ù
+
+            # n
+            (u'ñ', u'n'),
+            (u'\xc3\xb1', u'n'), # ñ
+
+            # other
+            (u'‘', u''),
+            (u'’', u''),
+            (u'“', u''),
+            (u'”', u''),
+            (u'…', u''),
+            (u'\xc2\xad', u''), # soft hyphen
+            (u'\xe2\x80\x98', '\''), # left quotation mark
+            (u'\xe2\x80\x99', '\''), # right quotation mark
+            (u'\xe2\x80\x9c', u'\''), # left double quotation mark
+            (u'\xe2\x80\x9d', u'\'') # right double quotation mark
         )
 
 
@@ -51,7 +91,7 @@ class EpuScrapyPipeline(object):
     def process_item(self, item, spider):
         item['news_journal'] = self.journals[spider.name]
         if item['text'] != '':
-            item['cleaned_text'] = self._clean_text(item['text'])
+            item['cleaned_text'] = ' '.join([self._clean_text(item['intro']), self._clean_text(item['text'])])
             item['epu_score'] = self._score_text(item['cleaned_text'])
         try:
             item.save()
