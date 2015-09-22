@@ -61,7 +61,7 @@ class GazetVanAntwerpenSpider(CrawlSpider):
 
         # search for article intro text
         article_intro_parts = article_div.xpath('div[@class="article__intro"]/descendant-or-self::text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts])
+        article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
         article_full_text_fragments = article_div.xpath('div[@class="article__intro"]/following-sibling::*/text()').extract()

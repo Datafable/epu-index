@@ -116,7 +116,7 @@ class DeredactieSpider(CrawlSpider):
 
         # search for article intro text
         article_intro_parts = response.xpath('//div[@id="intro"]/strong/text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts]).strip()
+        article_intro = ' '.join([x.strip() for x in article_intro_parts]).strip()
 
         # search for article full text
         article_full_text_fragments = response.xpath('//div[@id="articlebody"]/descendant::p/descendant-or-self::*/text()').extract()

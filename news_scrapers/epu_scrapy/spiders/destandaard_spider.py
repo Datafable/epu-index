@@ -172,7 +172,7 @@ class DeStandaardSpider(Spider):
             '''
         ).extract()
         if len(intro_parts) > 0:
-            article_intro = ' '.join([x.strip().encode('utf-8') for x in intro_parts])
+            article_intro = ' '.join([x.strip() for x in intro_parts])
         else:
             article_intro = ''
 
@@ -240,7 +240,7 @@ class DeStandaardSpider(Spider):
                 /descendant-or-self::*/text()
                 '''
             ).extract()
-            article_intro = ' '.join([x.strip().encode('utf-8') for x in intro_parts])
+            article_intro = ' '.join([x.strip() for x in intro_parts])
 
             # search for article full text
             text_parts = article_div.xpath('p/descendant-or-self::*/text()').extract()

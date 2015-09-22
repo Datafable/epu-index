@@ -112,7 +112,7 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         # search for article intro text
         article_intro_paragraph = response.xpath('//article/descendant::*/p[contains(concat(" ", normalize-space(@class), " "), " intro ")]')
         article_intro_parts = article_intro_paragraph.xpath('descendant-or-self::*/text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts])
+        article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
         article_text_sections = response.xpath('//article/descendant-or-self::*/section[contains(concat(" ", normalize-space(@class), " "), " clear ")]')

@@ -72,7 +72,7 @@ class DemorgenSpider(CrawlSpider):
 
         # search for article intro text
         article_intro_parts = article_div.xpath('*[contains(concat(" ", normalize-space(@class), " "), " article__intro ")]/text()').extract()
-        article_intro = ' '.join([x.strip().encode('utf-8') for x in article_intro_parts])
+        article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
         article_full_text_fragments = article_div.xpath('div[@itemprop="articleBody"]/descendant::*/text()').extract()
