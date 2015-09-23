@@ -65,7 +65,12 @@ def term_frequency(request):
         wpd = WordsPerDay.objects.filter(date=d)
 
         for w in wpd:
-            cnt[w.word] += w.frequency
+            # Skip numbers
+            try:
+                int(w.word)
+            except ValueError:
+                if len(w.word) > 1:  # Also skip one-letter words
+                    cnt[w.word] += w.frequency
 
         d += delta
 
