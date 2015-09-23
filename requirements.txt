@@ -14,6 +14,7 @@ pyOpenSSL==0.15.1
 python-dateutil==2.4.2
 requests[security]
 Scrapy==0.24.6
+service_identity==14.0.0
 six==1.9.0
 static3==0.5.1
 Twisted==15.1.0
