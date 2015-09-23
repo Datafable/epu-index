@@ -73,6 +73,12 @@ class JournalsScraped(models.Model):
         unique_together = ('journal', 'date')
 
 
+class PositiveArticlesManager(models.Manager):
+    def get_queryset(self):
+        return super(PositiveArticlesManager, self).get_queryset()\
+                                                   .filter(epu_score__gte=ARTICLES_APU_CUTOFF)
+
+
 class Article(models.Model):
     news_journal = models.ForeignKey(NewsJournal, null=True)
     intro = models.TextField(blank=True, null=True)
@@ -82,6 +88,9 @@ class Article(models.Model):
     cleaned_text = models.TextField()
     published_at = models.DateTimeField()
     epu_score = models.DecimalField(max_digits=9, decimal_places=5, blank=True, null=True)
+
+    objects = models.Manager()
+    positive_objects = PositiveArticlesManager()
 
     def ctws_cache_key(self):
         return "ctws_{pk}".format(pk=self.pk)

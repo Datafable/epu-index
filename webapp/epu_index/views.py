@@ -94,9 +94,9 @@ def highest_ranking_article(request):
         d_max = datetime.datetime.combine(d, datetime.time.max)
 
         # EPU null is considered to be 0 for this ranking.
-        article = Article.objects.annotate(epu_score_without_null=Coalesce('epu_score', 0))\
-                                 .filter(published_at__range=(d_min, d_max))\
-                                 .order_by('-epu_score_without_null').first()
+        article = Article.positive_objects.annotate(epu_score_without_null=Coalesce('epu_score', 0))\
+                                          .filter(published_at__range=(d_min, d_max))\
+                                          .order_by('-epu_score_without_null').first()
 
         if article:
             return Response({'article_title': article.title,
