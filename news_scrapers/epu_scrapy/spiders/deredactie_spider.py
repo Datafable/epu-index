@@ -52,7 +52,7 @@ class DeredactieSpider(CrawlSpider):
             #     (?P<nr_of_articles>\d+)  => matches a number (\d+) and assigns it to group "nr_of_articles"
             m = re.search('(?P<offset>\d+)-(?P<pagesize>\d+)\s+van\s+(?P<nr_of_articles>\d+)', nr_of_articles_text)
             if m:
-                pagesize = int(m.group('pagesize')) - int(m.group('offset'))
+                pagesize = int(m.group('pagesize')) - int(m.group('offset')) + 1
                 nr_of_articles = int(m.group('nr_of_articles'))
                 for i in range(0, nr_of_articles, pagesize):
                     # Note that the offset parameter starts at 0
