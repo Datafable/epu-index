@@ -4,7 +4,7 @@ At the [Applied Data Mining research group](http://www.applieddatamining.com/) a
 classifier was developed to classify news articles as Economic Policy Uncertainty (EPU) related or not. The EPU index is
 the number of EPU related articles per day divided by the number of news journals that were crawled. In order to get a
 daily update of the EPU index, a number of scrapers were developed that can scrape Belgian (Flemish) news jounals every
-day. The resulting EPU index data is available to the broad public [here](#link-does-not-work-yet).
+day. The resulting EPU index data is available to the broad public [here](http://www.applieddatamining.com/cms/?q=content/economic-policy-uncertainty-index).
 
 The application consists of 3 parts: the web scrapers, a web application and a front end.
 
