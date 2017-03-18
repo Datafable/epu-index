@@ -1,9 +1,11 @@
 import json
 import os
 import re
+import requests
 from scrapy import Spider, FormRequest, Request
+# from scrapy_splash import SplashRequest, SplashFormRequest
 from scrapy.exceptions import CloseSpider
-from epu_scrapy.items import Article
+from epuscrape.items import Article
 from datetime import datetime, timedelta, date
 from time import strptime
 
@@ -30,36 +32,35 @@ def set_start_url(settings):
 class DeTijdSpider(Spider):
     name = 'detijd' # name of the spider, to be used when running from command line
     allowed_domains = ['tijd.be']
-    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
-    start_urls = ['http://diensten.tijd.be']
+    custom_settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    start_urls = ['http://www.tijd.be/mijn-diensten']
 
     def __init__(self):
         self.months = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december']
 
-    def parse(self, response):
-        """
-        Overwrites Spiders parse method. Fill in log in details in log in form and submit.
-        :return: FormRequest
-        """
-        return FormRequest.from_response(
-            response,
-            formxpath='//form[@id="fb_loginform"]',
-            formdata={'username': self.settings['username'], 'password': self.settings['password']},
-            callback=self.go_to_search_site
-        )
-
-
-    def go_to_search_site(self, response):
+    def start_requests(self):
         """
         After login attempt, construct url to search page and start scraping that page by returning a Request object
         :return: Scrapy.Request object that will be parsed by parse_search_results.
         """
-        if 'Gebruiker niet gevonden' in response.body:
+        r = requests.post('http://www.tijd.be/registration/postchoice',
+                          data={'email': 'ellen_tobback@hotmail.com', 'currentFlowDefinition': 'registration-x-bots',
+                                'currentFlowState': 'CHOICE_STATE', 'bumpReason': '', 'currentReturnUrl': '/logout',
+                                'currentFlowBumpContext': 'ARTICLE', 'registrationSourceLabel': 'website'})
+
+        r2 = requests.post('http://www.tijd.be/registration/postlogin',
+                           data={'email': 'ellen_tobback@hotmail.com', 'currentFlowDefinition': 'registration-x-bots',
+                                 'password': 'projectEPU', 'stayLoggedIn': 'true', '_stayLoggedIn': 'on',
+                                 'currentFlowState': 'CHOICE_STATE', 'bumpReason': '',
+                                 'currentReturnUrl': '/mijn-diensten', 'currentFlowBumpContext': 'ARTICLE',
+                                 'registrationSourceLabel': 'website'
+                                 })
+
+        if 'r16-form__errormessage' in r2.text:
             raise CloseSpider('could not log on')
         else:
             url = set_start_url(self.settings)
-            return Request(url, callback=self.parse_search_results)
-
+            yield Request(url, callback=self.parse_search_results)
 
     def parse_search_results(self, response):
         """
