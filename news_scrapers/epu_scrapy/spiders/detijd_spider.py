@@ -5,7 +5,7 @@ import requests
 from scrapy import Spider, FormRequest, Request
 # from scrapy_splash import SplashRequest, SplashFormRequest
 from scrapy.exceptions import CloseSpider
-from epuscrape.items import Article
+from epu_scrapy.items import Article
 from datetime import datetime, timedelta, date
 from time import strptime
 
@@ -32,7 +32,7 @@ def set_start_url(settings):
 class DeTijdSpider(Spider):
     name = 'detijd' # name of the spider, to be used when running from command line
     allowed_domains = ['tijd.be']
-    custom_settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = ['http://www.tijd.be/mijn-diensten']
 
     def __init__(self):
