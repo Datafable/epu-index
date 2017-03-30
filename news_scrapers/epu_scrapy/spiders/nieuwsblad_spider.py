@@ -3,7 +3,7 @@ import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.exceptions import CloseSpider
-from epuscrape.items import Article
+from epu_scrapy.items import Article
 from datetime import datetime, timedelta
 from time import strptime
 
