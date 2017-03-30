@@ -3,7 +3,7 @@ import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.exceptions import CloseSpider
-from epu_scrapy.items import Article
+from epuscrape.items import Article
 from datetime import datetime, timedelta
 from time import strptime
 
@@ -57,7 +57,7 @@ class NieuwsbladSpider(CrawlSpider):
             datetime_str = ''
 
         # search for div containing all article content
-        article_div = response.xpath('//article/div[2]/div/div/div[1]/div[@class="article__body"]')
+        article_div = response.xpath('//article/div[2]/div/div/div[@class="article"]/div[@class="article__body"]')
 
         # search for article intro text
         article_intro_parts = article_div.xpath('div[@class="article__intro"]/descendant-or-self::text()').extract()

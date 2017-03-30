@@ -3,7 +3,7 @@ import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.exceptions import CloseSpider
-from epu_scrapy.items import Article
+from epuscrape.items import Article
 from datetime import datetime, timedelta
 from time import strptime
 
@@ -75,7 +75,7 @@ class DemorgenSpider(CrawlSpider):
         article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
-        article_full_text_fragments = article_div.xpath('div[@itemprop="articleBody"]/descendant::*/text()').extract()
+        article_full_text_fragments = article_div.xpath('/p[contains(concat(" ", normalize-space(@class), " "), " article__body__paragraph ")]/descendant-or-self::*/text()').extract()
         article_full_text = '\n'.join([x.strip() for x in article_full_text_fragments]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.

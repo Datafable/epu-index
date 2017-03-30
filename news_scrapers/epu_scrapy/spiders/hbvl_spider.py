@@ -3,7 +3,7 @@ import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
 from scrapy.exceptions import CloseSpider
-from epu_scrapy.items import Article
+from epuscrape.items import Article
 from datetime import datetime, timedelta
 from time import strptime
 
@@ -57,14 +57,22 @@ class HetBelangVanLimburgSpider(CrawlSpider):
             datetime_str = ''
 
         # search for div containing all article content
-        article_div = response.xpath('//article/div[2]/div/div/div[1]/div[@class="article__body"]')
+        article_div = response.xpath('''//article/div[2]/div/div/
+        div[contains(concat(" ", normalize-space(@class), " "), " article ")]/
+        div[contains(concat(" ", normalize-space(@class), " "), " article__body ")]''')
 
         # search for article intro text
-        article_intro_parts = article_div.xpath('div[@class="article__intro"]/descendant-or-self::text()').extract()
+        article_intro_parts = article_div.xpath('''
+        div[contains(concat(" ", normalize-space(@class), " "), " article__intro ")]
+        /descendant-or-self::*/text()
+        ''').extract()
         article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
-        article_full_text_fragments = article_div.xpath('div[@class="article__intro"]/following-sibling::*/text()').extract()
+        article_full_text_fragments = article_div.xpath('''
+        div[contains(concat(" ", normalize-space(@class), " "), " article__intro ")]
+        /following-sibling::*/text()
+        ''').extract()
         article_full_text = '\n'.join([x.strip() for x in article_full_text_fragments]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
