@@ -74,4 +74,5 @@ class NieuwsbladSpider(CrawlSpider):
         article['title'] = title
         article['published_at'] = datetime_str
         article['text'] = article_full_text
-        return article
+        if datetime_str:
+            yield article
