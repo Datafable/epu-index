@@ -136,66 +136,43 @@ class DeStandaardSpider(Spider):
 
     def parse_archive_article(self, response):
         # search for article title
-        title_parts = response.xpath('''
-            //article[contains(concat(" ", normalize-space(@class), " "), " article-full ")]
-            /descendant::div[contains(concat(" ", normalize-space(@data-mht-block), " "), " detail__article-header-intro ")]
-            /header
-            /descendant::h1[contains(concat(" ", normalize-space(@class), " "), " article__header ")]
-            /text()
-        '''
-        ).extract()
+        title_parts = set(response.css('article div.DS-head header h1').xpath('./descendant-or-self::*/text()').extract())
         if len(title_parts) > 0:
-            title = title_parts[0].strip().encode('utf-8')
+            title = list(title_parts)[0].encode('utf-8').strip()
         else:
             title = ''
 
         # search for article published date
-        published_date_parts = response.xpath('''
-            //article[contains(concat(" ", normalize-space(@class), " "), " article-full ")]
-            /descendant::div[contains(concat(" ", normalize-space(@data-mht-block), " "), " detail__article-header-intro ")]
-            /header
-            /descendant::time/@datetime
-            '''
-        ).extract()
-        if len(published_date_parts) > 0:
-            datetime_str_with_tz = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format...
-            datetime_str = datetime_str_with_tz[0:-7] # ...but we'll drop the time zone information
-        else:
+        publish_date_parts = response.xpath('//meta[@property="article:modified_time"]').extract()
+        if len(publish_date_parts) == 0:
             datetime_str = ''
+        else:
+            publish_date_str = response.xpath('//meta[@property="article:modified_time"]').extract()[0].encode('utf-8')
+            datetime_str = publish_date_str[0:10]
 
         # get article intro
-        intro_parts = response.xpath('''
-            //article[contains(concat(" ", normalize-space(@class), " "), " article-full ")]
-            /descendant::div[contains(concat(" ", normalize-space(@data-mht-block), " "), " detail__article-header-intro ")]
-            /div[contains(concat(" ", normalize-space(@class), " "), " intro ")]
-            /descendant-or-self::*/text()
-            '''
-        ).extract()
-        if len(intro_parts) > 0:
-            article_intro = ' '.join([x.strip() for x in intro_parts])
-        else:
-            article_intro = ''
+        intro = ' '.join(
+            [x.strip().encode('utf-8') for x in response.css('article div.DS-head header div.DS-introduction').xpath(
+                './descendant-or-self::*/text()').extract()
+            ]
+        )
 
         # get article text
-        text_parts = response.xpath('''
-            //div[contains(concat(" ", normalize-space(@data-mht-block), " "), " detail__article-body ")]
-            /descendant-or-self::*/text()
-            '''
-        ).extract()
-        if len(text_parts) > 0:
-            article_text = ' '.join([x.strip() for x in text_parts])
-        else:
-            article_text = ''
+        article_text = ' '.join(
+            [x.strip().encode('utf-8') for x in response.css('article div.DS-head').xpath(
+                'string(./following-sibling::*)').extract()
+             if x
+             ]
+        )
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
         article = Article()
         article['url'] = response.url
-        article['intro'] = article_intro
+        article['intro'] = intro
         article['title'] = title
         article['published_at'] = datetime_str
         article['text'] = article_text
         return article
-
 
     def parse_live_article(self, response):
         # search for article title
