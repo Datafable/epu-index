@@ -22,13 +22,13 @@ def set_start_urls(settings):
         # De Morgen does not allow us to search for articles published yesterday using a format like `from=yesterday&to=yesterday`.
         # It yields no results because the `to` parameter is excluding the results we expect to find.
         # Therefore, we have to include articles from today, possibly duplicating articles that were already scraped yesterday.
-        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, yesterday_str, today_str)]
+        start_urls = ['https://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, yesterday_str, today_str)]
     else:
         start = datetime(*strptime(settings['period']['start'], '%Y-%m-%d')[:6]) # awkward syntax to convert struct time to datetime (see: http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object)
         start_str = '{0}-{1}-{2}'.format(start.day, start.month, start.year)
         end = datetime(*strptime(settings['period']['end'], '%Y-%m-%d')[:6])
         end_str = '{0}-{1}-{2}'.format(end.day, end.month, end.year)
-        start_urls = ['http://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, start_str, end_str)]
+        start_urls = ['https://www.demorgen.be/zoek/?query={0}&sorting=DATE_DESC&date=RANGE&from={1}&to={2}'.format(term, start_str, end_str)]
     return start_urls
 
 
@@ -52,7 +52,7 @@ class DemorgenSpider(CrawlSpider):
             title = ''
 
         # search for article published date
-        datetime_str_parts = response.xpath('//article/div/footer/descendant-or-self::*/time/@datetime').extract()
+        datetime_str_parts = response.xpath('//article/descendant::footer/descendant::time/@datetime').extract()
         if len(datetime_str_parts) > 0:
             try:
                 dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
@@ -68,14 +68,14 @@ class DemorgenSpider(CrawlSpider):
 
         # search for div containing all article content. See this SO post that explains why such a complicated XPath selector
         # is used: http://stackoverflow.com/questions/1390568/how-to-match-attributes-that-contain-a-certain-string
-        article_div = response.xpath('//article/descendant::*/div[contains(concat(" ", normalize-space(@class), " "), " article__body ")]')
+        article_div = response.xpath('//article').css('.article__body')
 
         # search for article intro text
-        article_intro_parts = article_div.xpath('*[contains(concat(" ", normalize-space(@class), " "), " article__intro ")]/text()').extract()
+        article_intro_parts = article_div.css('.article__intro').xpath('./descendant-or-self::*/text()').extract()
         article_intro = ' '.join([x.strip() for x in article_intro_parts])
 
         # search for article full text
-        article_full_text_fragments = article_div.xpath('/p[contains(concat(" ", normalize-space(@class), " "), " article__body__paragraph ")]/descendant-or-self::*/text()').extract()
+        article_full_text_fragments = article_div.css('.article__body__paragraph').xpath('./descendant-or-self::*/text()').extract()
         article_full_text = '\n'.join([x.strip() for x in article_full_text_fragments]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.

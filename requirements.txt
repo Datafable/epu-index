@@ -10,11 +10,8 @@ enum34==1.0.4
 gunicorn==19.3.0
 pandas==0.16.2
 psycopg2==2.6
-pyOpenSSL==0.15.1
 python-dateutil==2.4.2
 requests[security]
-Scrapy==0.24.6
-service_identity==14.0.0
-six==1.9.0
-static3==0.5.1
-Twisted==15.1.0
+Scrapy==1.5.0
+scrapy-djangoitem==1.1.1
+pyOpenSSL==17.5.0

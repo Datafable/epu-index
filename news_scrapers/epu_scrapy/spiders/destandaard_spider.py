@@ -29,7 +29,7 @@ def set_start_url(settings):
 class DeStandaardSpider(Spider):
     name = 'standaard' # name of the spider, to be used when running from command line
     allowed_domains = ['www.standaard.be']
-    settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
+    _settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = ['http://www.standaard.be/account/logon']
 
     def parse(self, response):
@@ -37,10 +37,12 @@ class DeStandaardSpider(Spider):
         Overwrites Spiders parse method. Fill in log in details in log in form and submit.
         :return:
         """
+        print('custom settings:')
+        print(self._settings)
         return FormRequest.from_response(
             response,
             formxpath='//div[contains(concat(" ", normalize-space(@class), " "), " main-container ")]/descendant::form',
-            formdata={'EmailOrUsername': self.settings['username'], 'Password': self.settings['password']},
+            formdata={'EmailOrUsername': self._settings['username'], 'Password': self._settings['password']},
             callback=self.go_to_search_site
         )
 
@@ -53,7 +55,7 @@ class DeStandaardSpider(Spider):
         if 'U heeft een ongeldig e-mailadres of wachtwoord ingevuld' in response.body:
             raise CloseSpider('could not log on')
         else:
-            url = set_start_url(self.settings)
+            url = set_start_url(self._settings)
             return Request(url, callback=self.parse_search_results)
 
 
@@ -62,13 +64,13 @@ class DeStandaardSpider(Spider):
         check whether the given date is included in the period configured in the settings
         :return: True or False
         """
-        if type(self.settings['period']) is not dict:
+        if type(self._settings['period']) is not dict:
             today = date.today()
             end = datetime(today.year, today.month, today.day, 0, 0, 0)
             start = end - timedelta(days=1)
         else:
-            start = datetime(*strptime(self.settings['period']['start'], '%Y-%m-%d')[:6])
-            end = datetime(*strptime(self.settings['period']['end'], '%Y-%m-%d')[:6])
+            start = datetime(*strptime(self._settings['period']['start'], '%Y-%m-%d')[:6])
+            end = datetime(*strptime(self._settings['period']['end'], '%Y-%m-%d')[:6])
             end = end + timedelta(days=1) # the previous statement will set end to 00:00:00
         return given_date >= start and given_date <= end
 
