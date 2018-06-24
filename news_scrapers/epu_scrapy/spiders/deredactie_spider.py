@@ -80,7 +80,7 @@ class DeredactieSpider(CrawlSpider):
         scrapy.Request objects for every link found. The parsing of these links is done by the parse_article
         function.
         """
-        print response.url
+        print(response.url)
         links = response.xpath('//div[contains(concat(" ", normalize-space(@class), " "), " searchresults ")]/descendant::a/@href').extract()
         link_set = set([x.encode('utf-8') for x in links])
         for l in link_set:

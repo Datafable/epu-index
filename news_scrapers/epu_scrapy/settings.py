@@ -7,6 +7,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(
 webapp_dir = os.path.join(project_root, 'webapp')
 sys.path.append(webapp_dir)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'webapp.settings'
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
 
 BOT_NAME = 'epu_scrapy'
 
@@ -14,7 +16,7 @@ SPIDER_MODULES = ['epu_scrapy.spiders']
 NEWSPIDER_MODULE = 'epu_scrapy.spiders'
 
 ITEM_PIPELINES = {
-    'epu_scrapy.pipelines.EpuScrapyPipeline': 100
+    # 'epu_scrapy.pipelines.EpuScrapyPipeline': 100
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

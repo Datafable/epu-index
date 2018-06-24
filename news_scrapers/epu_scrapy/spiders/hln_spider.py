@@ -1,12 +1,8 @@
 import json
 import os
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
-from scrapy.exceptions import CloseSpider
+from scrapy.contrib.spiders import CrawlSpider
 from scrapy import Request
 from epu_scrapy.items import Article
-from datetime import datetime, timedelta, date
-from time import strptime
 
 
 def set_start_urls(settings):
@@ -37,14 +33,14 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         # search for article title
         title_parts = response.xpath('//article/header/h1/text()').extract()
         if len(title_parts) > 0:
-            title = title_parts[0].encode('utf-8')
+            title = title_parts[0]
         else:
             title = ''
 
         # search for article published date
         datetime_str_parts = response.xpath('//article/header/ul/descendant::time/@datetime').extract()
         if len(datetime_str_parts) > 0:
-            datetime_str = ' '.join(x.encode('utf-8') for x in datetime_str_parts)
+            datetime_str = ' '.join(x for x in datetime_str_parts)
         else:
             datetime_str = ''
 
@@ -55,7 +51,7 @@ class HetLaatsteNieuwsSpider(CrawlSpider):
         # search for article full text
         article_text_sections = response.xpath('//article').css('p.article__text').xpath('./descendant-or-self::*/text()').extract()
 
-        article_full_text = '\n'.join([x.encode('utf-8').strip() for x in article_text_sections]).strip()
+        article_full_text = '\n'.join([x.strip() for x in article_text_sections]).strip()
 
         # now create an Article item, and return it. All Articles created during scraping can be written to an output file when the -o option is given.
         article = Article()

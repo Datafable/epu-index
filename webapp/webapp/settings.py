@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'webapp.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 
 # Database
@@ -137,4 +137,4 @@ CACHES = {
     }
 }
 
-from settings_local import *
+from .settings_local import *

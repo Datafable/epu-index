@@ -1,7 +1,7 @@
 import json
 import os
 from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.linkextractors import LinkExtractor
 from scrapy.exceptions import CloseSpider
 from epu_scrapy.items import Article
 from datetime import datetime, timedelta
@@ -38,8 +38,8 @@ class DemorgenSpider(CrawlSpider):
     settings = json.load(open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'crawling_settings.json')))
     start_urls = set_start_urls(settings)
     rules = (
-        Rule(SgmlLinkExtractor(allow=('zoek.*page=[0-9]+'))),
-        Rule(SgmlLinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
+        Rule(LinkExtractor(allow=('zoek.*page=[0-9]+'))),
+        Rule(LinkExtractor(allow=('www.demorgen.be\/[^\/]+\/[^\/]+'), restrict_xpaths=('//ul[contains(concat(" ", normalize-space(@class), " "), " articles-list ")]')),
              callback='parse_article'),
     ) # if a link matches the pattern in 'allow', it will be followed. If 'callback' is given, that function will be executed with the page that the link points to.
 
@@ -47,7 +47,7 @@ class DemorgenSpider(CrawlSpider):
         # search for article title
         title_parts = response.xpath('//article/div/header/h1/text()').extract()
         if len(title_parts) > 0:
-            title = title_parts[0].encode('utf-8')
+            title = title_parts[0]
         else:
             title = ''
 
@@ -55,11 +55,11 @@ class DemorgenSpider(CrawlSpider):
         datetime_str_parts = response.xpath('//article/descendant::footer/descendant::time/@datetime').extract()
         if len(datetime_str_parts) > 0:
             try:
-                dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
+                dt = datetime(*strptime(datetime_str_parts[0].split('+')[0], '%Y-%m-%d, %H:%M')[0:6])
                 datetime_str = dt.isoformat()
             except ValueError:
                 try:
-                    dt = datetime(*strptime(datetime_str_parts[0].encode('utf-8').split('+')[0], '%Y-%m-%d %H:%M')[0:6]) # no comma after day
+                    dt = datetime(*strptime(datetime_str_parts[0].split('+')[0], '%Y-%m-%d %H:%M')[0:6]) # no comma after day
                     datetime_str = dt.isoformat()
                 except ValueError:
                     datetime_str = ''

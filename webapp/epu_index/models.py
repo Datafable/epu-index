@@ -63,7 +63,7 @@ class NewsJournal(models.Model):
 # This table/model stores a log of which scrapers successfully ran on a give day.
 # It provides necessary data to calculate the EPU index of a given day. See issue #61 and #64
 class JournalsScraped(models.Model):
-    journal = models.ForeignKey(NewsJournal)
+    journal = models.ForeignKey(NewsJournal, on_delete=models.CASCADE)
     date = models.DateField()
 
     def __unicode__(self):
@@ -80,7 +80,7 @@ class PositiveArticlesManager(models.Manager):
 
 
 class Article(models.Model):
-    news_journal = models.ForeignKey(NewsJournal, null=True)
+    news_journal = models.ForeignKey(NewsJournal, on_delete=models.CASCADE, null=True)
     intro = models.TextField(blank=True, null=True)
     url = models.URLField(blank=True, null=True, unique=True)
     title = models.CharField(max_length=255)

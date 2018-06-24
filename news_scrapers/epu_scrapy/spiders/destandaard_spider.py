@@ -6,6 +6,7 @@ from epu_scrapy.items import Article
 from datetime import datetime, timedelta, date
 from time import strptime
 
+
 def set_start_url(settings):
     """
     Based on the dates given in the settings file, construct the start urls for the spider
@@ -25,6 +26,7 @@ def set_start_url(settings):
         end_str = '{0}/{1}/{2}'.format(end.day, end.month, end.year)
         start_url = 'http://www.standaard.be/zoeken/?keyword={0}&datestart={1}&dateend={2}'.format(term, start_str, end_str)
     return start_url
+
 
 class DeStandaardSpider(Spider):
     name = 'standaard' # name of the spider, to be used when running from command line
@@ -46,13 +48,12 @@ class DeStandaardSpider(Spider):
             callback=self.go_to_search_site
         )
 
-
     def go_to_search_site(self, response):
         """
         After login attempt, construct url to search page and start scraping that page by returning a Request object
         :return: Scrapy.Request object that will be parsed by parse_search_results.
         """
-        if 'U heeft een ongeldig e-mailadres of wachtwoord ingevuld' in response.body:
+        if 'U heeft een ongeldig e-mailadres of wachtwoord ingevuld' in response.body.decode('utf-8'):
             raise CloseSpider('could not log on')
         else:
             url = set_start_url(self._settings)
@@ -107,7 +108,7 @@ class DeStandaardSpider(Spider):
             /a/@href
             ''').extract()
         if len(next_link) > 0:
-            next_link = next_link[0].encode('utf-8')
+            next_link = next_link[0]
             yield Request(next_link, callback=self.parse_search_results)
 
         # find regular articles
@@ -131,16 +132,17 @@ class DeStandaardSpider(Spider):
             else:
                 raise CloseSpider("article {0} is not in date range".format(url))
         for article_element in dsplus_article_elements:
-            if self.article_published_in_period(article_element):
-                url = article_element.xpath('a/@href').extract()[0]
-                yield Request(url, callback=self.parse_archive_article)
+            # if self.article_published_in_period(article_element):
+            #     url = article_element.xpath('a/@href').extract()[0]
+            #     yield Request(url, callback=self.parse_archive_article)
+            pass  # JS rendering needed to parse archived articles
 
 
     def parse_archive_article(self, response):
         # search for article title
         title_parts = set(response.css('article div.DS-head header h1').xpath('./descendant-or-self::*/text()').extract())
         if len(title_parts) > 0:
-            title = list(title_parts)[0].encode('utf-8').strip()
+            title = list(title_parts)[0].strip()
         else:
             title = ''
 
@@ -149,19 +151,19 @@ class DeStandaardSpider(Spider):
         if len(publish_date_parts) == 0:
             datetime_str = ''
         else:
-            publish_date_str = response.xpath('//meta[@property="article:modified_time"]').extract()[0].encode('utf-8')
+            publish_date_str = response.xpath('//meta[@property="article:modified_time"]').extract()[0]
             datetime_str = publish_date_str[0:10]
 
         # get article intro
         intro = ' '.join(
-            [x.strip().encode('utf-8') for x in response.css('article div.DS-head header div.DS-introduction').xpath(
+            [x.strip() for x in response.css('article div.DS-head header div.DS-introduction').xpath(
                 './descendant-or-self::*/text()').extract()
             ]
         )
 
         # get article text
         article_text = ' '.join(
-            [x.strip().encode('utf-8') for x in response.css('article div.DS-head').xpath(
+            [x.strip() for x in response.css('article div.DS-head').xpath(
                 'string(./following-sibling::*)').extract()
              if x
              ]
@@ -186,7 +188,7 @@ class DeStandaardSpider(Spider):
             '''
         ).extract()
         if len(title_parts) > 0:
-            title = title_parts[0].strip().encode('utf-8')
+            title = title_parts[0].strip()
         else:
             title = ''
 
@@ -199,8 +201,8 @@ class DeStandaardSpider(Spider):
             '''
         ).extract()
         if len(published_date_parts) > 0:
-            datetime_str_with_tz = published_date_parts[0].encode('utf-8') # datetime attribute is in iso format...
-            datetime_str = datetime_str_with_tz[0:-7] # ...but we'll drop the time zone information
+            datetime_str_with_tz = published_date_parts[0]  # datetime attribute is in iso format...
+            datetime_str = datetime_str_with_tz[0:-7]  # ...but we'll drop the time zone information
         else:
             datetime_str = ''
 

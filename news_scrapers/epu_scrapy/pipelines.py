@@ -68,11 +68,12 @@ class EpuScrapyPipeline(object):
             (u'“', u''),
             (u'”', u''),
             (u'…', u''),
-            (u'\xc2\xad', u''), # soft hyphen
-            (u'\xe2\x80\x98', '\''), # left quotation mark
-            (u'\xe2\x80\x99', '\''), # right quotation mark
-            (u'\xe2\x80\x9c', u'\''), # left double quotation mark
-            (u'\xe2\x80\x9d', u'\'') # right double quotation mark
+            (u'\xc2\xad', u''),  # soft hyphen
+            (u'\xe2\x80\x98', '\''),  # left quotation mark
+            (u'\xe2\x80\x99', '\''),  # right quotation mark
+            (u'\xe2\x80\x9c', u'\''),  # left double quotation mark
+            (u'\xe2\x80\x9d', u'\''),  # right double quotation mark
+            (u'\xa0', u' ')  # space character
         )
 
 
